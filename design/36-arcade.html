@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · 36 Arcade</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+@font-face {
+    font-family: "Pixel Code";
+    src: url("assets/fonts/PixelCode-Black.otf") format("opentype");
+    font-weight: 900;
+}
+
+@font-face {
+    font-family: "Pixel Code";
+    src: url("assets/fonts/PixelCode-Bold.otf") format("opentype");
+    font-weight: 700;
+}
+
+@property --edge {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: #4F5B6B;
+}
+
+@property --fill {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: #ECEEF0;
+}
+
+.stage {
+    --paper: #ECEEF0;
+    --slate: #4F5B6B;
+    --slate-deep: #3E4856;
+    --pink: #F2B8C6;
+    --red: #F26A4B;
+    --shade: rgba(79, 91, 107, 0.35);
+    background: var(--paper);
+    color: var(--slate);
+    font-family: "Pixel Code", monospace;
+    font-weight: 700;
+    text-transform: uppercase;
+    -webkit-font-smoothing: none;
+    font-smooth: never;
+}
+
+.stage button { text-transform: uppercase; }
+
+.pixels {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    image-rendering: pixelated;
+}
+
+.wash {
+    position: absolute;
+    inset: 0;
+    background: rgba(236, 238, 240, 0.22);
+}
+
+.shell { position: absolute; inset: 0; }
+
+[data-bitmap] { display: inline-flex; flex: none; }
+[data-bitmap] svg { display: block; width: 100%; height: 100%; }
+
+.corner {
+    position: absolute;
+    top: 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: 2px;
+}
+
+.corner.left { left: 80px; }
+.corner.right { right: 80px; align-items: flex-end; }
+.corner .label { color: var(--red); }
+.corner .value { font-weight: 900; font-size: 36px; }
+
+.clock {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 64px;
+    display: flex;
+    justify-content: center;
+    font-size: 120px;
+    font-weight: 900;
+    line-height: 1;
+    text-shadow: 10px 10px 0 var(--pink);
+}
+
+.colon { animation: blink 1000ms steps(1) infinite; }
+
+.weekday {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 216px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    font-size: 24px;
+    letter-spacing: 6px;
+    line-height: 1;
+}
+
+.weekday .bar { width: 48px; height: 8px; background: var(--red); box-shadow: 0 8px 0 var(--pink); }
+
+form {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 392px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.player {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    height: 56px;
+    padding: 0 16px;
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    line-height: 1;
+}
+
+.player .tag { color: var(--red); }
+.player [data-bitmap] { width: 16px; height: 28px; color: var(--slate); }
+.player [data-bitmap="left"] { margin-right: 12px; animation: nudge-left 1000ms steps(1) infinite; }
+.player [data-bitmap="right"] { margin-left: 12px; animation: nudge-right 1000ms steps(1) infinite; }
+.player:hover .tag { color: var(--slate); }
+.player:hover [data-bitmap] { color: var(--red); }
+
+.slot {
+    position: relative;
+    width: 864px;
+    height: 112px;
+    margin-top: 48px;
+}
+
+.box {
+    --edge: var(--slate);
+    --fill: var(--paper);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 48px;
+    background: var(--fill);
+    box-shadow:
+        0 -8px 0 0 var(--edge),
+        0 8px 0 0 var(--edge),
+        -8px 0 0 0 var(--edge),
+        8px 0 0 0 var(--edge),
+        8px 16px 0 0 var(--shade),
+        16px 8px 0 0 var(--shade);
+    cursor: text;
+}
+
+.box input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    color: transparent;
+    caret-color: transparent;
+    background: transparent;
+    cursor: text;
+}
+
+.box input::selection { background: transparent; }
+
+.dots { display: flex; align-items: center; gap: 16px; height: 48px; color: var(--edge); }
+.dots .dot { width: 32px; height: 32px; background: var(--edge); }
+.dots .char { font-size: 48px; font-weight: 900; font-style: normal; line-height: 1; text-transform: none; }
+.dots .cursor { width: 32px; height: 8px; margin-top: 32px; background: var(--red); animation: blink 500ms steps(1) infinite; }
+
+.stage:not(.has-input):not(.is-busy):not(.is-error) .box {
+    background: transparent;
+    box-shadow: none;
+}
+
+.stage:not(.has-input):not(.is-busy):not(.is-error) .dots { visibility: hidden; }
+
+.has-input .box { animation: box-in 240ms steps(3); }
+
+.prompt, .dialog, .ready {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.prompt {
+    gap: 32px;
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-shadow: 4px 4px 0 var(--pink);
+}
+
+.prompt .blink { animation: blink 500ms steps(1) infinite; }
+.prompt [data-bitmap] { width: 20px; height: 36px; color: var(--red); }
+
+.stage.is-idle:not(.has-input) .prompt { display: flex; }
+
+.dialog {
+    left: 32px;
+    right: 32px;
+    justify-content: flex-start;
+    gap: 32px;
+    padding: 0 40px;
+    background: var(--pink);
+    box-shadow:
+        0 -8px 0 0 var(--slate),
+        0 8px 0 0 var(--slate),
+        -8px 0 0 0 var(--slate),
+        8px 0 0 0 var(--slate),
+        8px 16px 0 0 var(--shade),
+        16px 8px 0 0 var(--shade);
+}
+
+.dialog [data-bitmap] { width: 64px; height: 64px; animation: pulse 1000ms steps(1) infinite; }
+.dialog-text { font-size: 24px; line-height: 36px; letter-spacing: 2px; }
+.dialog-text::after { content: "_"; color: var(--red); animation: blink 500ms steps(1) infinite; }
+
+.stage.is-info:not(.has-input) .dialog { display: flex; }
+.stage.is-info:not(.has-input) .box { box-shadow: none; background: transparent; }
+
+.ready {
+    font-size: 72px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--red);
+    text-shadow: 6px 6px 0 var(--slate);
+}
+
+.ready span { animation: blink 250ms steps(1) infinite 400ms; }
+.is-success .ready { display: flex; }
+.is-success .box { box-shadow: none; background: transparent; }
+
+.status {
+    margin-top: 56px;
+    min-height: 96px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    line-height: 1;
+}
+
+.message { font-size: 24px; letter-spacing: 2px; text-align: center; max-width: 1200px; }
+.is-busy .message, .is-info:not(.has-input) .message { display: none; }
+
+.loading, .wrong { display: none; align-items: center; }
+
+.loading {
+    gap: 24px;
+    height: 80px;
+    padding: 0 32px 0 24px;
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--paper);
+    background: var(--slate);
+    clip-path: polygon(0 8px, 8px 8px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 8px), 0 calc(100% - 8px));
+}
+.is-busy .loading { display: flex; }
+
+.step {
+    display: inline-block;
+    width: 0;
+    overflow: hidden;
+    vertical-align: bottom;
+    animation: dots-step 1200ms steps(4, jump-none) infinite;
+}
+
+.step::before { content: "..."; }
+
+.spinner {
+    position: relative;
+    width: 48px;
+    height: 48px;
+}
+
+.spinner i {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #8C95A3;
+    animation: spin-cell 800ms steps(1) infinite;
+}
+
+.spinner i:nth-child(1) { left: 16px; top: 0; animation-delay: -800ms; }
+.spinner i:nth-child(2) { left: 32px; top: 0; animation-delay: -700ms; }
+.spinner i:nth-child(3) { left: 32px; top: 16px; animation-delay: -600ms; }
+.spinner i:nth-child(4) { left: 32px; top: 32px; animation-delay: -500ms; }
+.spinner i:nth-child(5) { left: 16px; top: 32px; animation-delay: -400ms; }
+.spinner i:nth-child(6) { left: 0; top: 32px; animation-delay: -300ms; }
+.spinner i:nth-child(7) { left: 0; top: 16px; animation-delay: -200ms; }
+.spinner i:nth-child(8) { left: 0; top: 0; animation-delay: -100ms; }
+
+.wrong {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--red);
+    text-shadow: 4px 4px 0 var(--slate);
+}
+
+.is-error .wrong { display: flex; animation: wrong-in 300ms steps(3); }
+.is-error .message { color: var(--slate); }
+
+.is-error .box {
+    --edge: var(--red);
+    animation: invert 640ms steps(1);
+}
+
+.is-error .shell { animation: jolt 400ms steps(1); }
+
+.caps {
+    padding: 8px 16px;
+    font-size: 24px;
+    letter-spacing: 2px;
+    color: var(--paper);
+    background: var(--slate);
+}
+
+.caps::before { content: "▲ "; color: var(--pink); }
+
+.is-busy .box { --edge: var(--slate); }
+.is-busy .dots .dot { animation: dot-wave 800ms steps(1) infinite; }
+.is-busy .dots .cursor { display: none; }
+
+.hud {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 120px;
+    padding: 0 80px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    background: var(--slate);
+    color: var(--paper);
+    font-size: 24px;
+    letter-spacing: 2px;
+    line-height: 1;
+}
+
+.hud::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -16px;
+    height: 16px;
+    background: conic-gradient(var(--slate) 25%, transparent 0 50%, var(--slate) 0 75%, transparent 0) 0 0 / 16px 16px;
+}
+
+.hud::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -32px;
+    height: 8px;
+    background: linear-gradient(90deg, var(--slate) 8px, transparent 0) 8px 0 / 32px 8px;
+}
+
+.power { display: flex; gap: 40px; justify-self: start; }
+
+.power button {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 56px;
+    color: var(--paper);
+    letter-spacing: 2px;
+}
+
+.power [data-bitmap] { width: 48px; height: 48px; color: var(--pink); }
+.power button:hover { color: var(--pink); }
+.power button:hover [data-bitmap] { color: var(--red); }
+
+.session {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    align-items: center;
+    column-gap: 24px;
+    row-gap: 8px;
+    padding: 0 16px;
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--paper);
+    line-height: 1;
+}
+
+.session .tag { grid-column: 1 / -1; font-size: 24px; font-weight: 700; letter-spacing: 6px; color: var(--pink); }
+.session [data-bitmap] { width: 16px; height: 28px; color: var(--pink); }
+.session:hover [data-bitmap] { color: var(--red); }
+
+.keys { display: flex; align-items: center; gap: 40px; justify-self: end; }
+.keys i[data-icon] { display: none; }
+
+.peek {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 56px;
+    color: var(--paper);
+    letter-spacing: 2px;
+}
+
+.peek [data-bitmap] { width: 48px; height: 48px; color: var(--pink); }
+.peek:hover { color: var(--pink); }
+.peek:hover [data-bitmap] { color: var(--red); }
+
+.start {
+    height: 56px;
+    padding: 0 28px;
+    background: var(--pink);
+    color: var(--slate);
+    font-weight: 900;
+    font-size: 24px;
+    letter-spacing: 4px;
+    clip-path: polygon(0 8px, 8px 8px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 8px), 0 calc(100% - 8px));
+}
+
+.start:hover { background: var(--red); color: var(--paper); }
+
+.wipe {
+    position: absolute;
+    inset: 0;
+    display: none;
+    grid-template-columns: repeat(16, 120px);
+    grid-template-rows: repeat(9, 120px);
+    pointer-events: none;
+}
+
+.wipe i { background: #000; transform: scale(0); }
+.is-success .wipe { display: grid; }
+.is-success .wipe i { animation: block-in 120ms steps(2) both; }
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+@keyframes nudge-left {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(-8px); }
+}
+
+@keyframes nudge-right {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(8px); }
+}
+
+@keyframes pulse {
+    0% { color: var(--slate); }
+    50% { color: var(--red); }
+}
+
+@keyframes box-in {
+    0% { transform: scale(0.25, 0.5); }
+    100% { transform: scale(1); }
+}
+
+@keyframes invert {
+    0% { --fill: var(--slate); --edge: var(--paper); }
+    25% { --fill: var(--paper); --edge: var(--red); }
+    50% { --fill: var(--slate); --edge: var(--paper); }
+    75% { --fill: var(--paper); --edge: var(--red); }
+}
+
+@keyframes jolt {
+    0% { transform: translate(8px, 0); }
+    20% { transform: translate(-8px, 0); }
+    40% { transform: translate(8px, 0); }
+    60% { transform: translate(-8px, 0); }
+    80% { transform: translate(0, 0); }
+}
+
+@keyframes wrong-in {
+    0% { transform: translateY(-16px); opacity: 0; }
+    100% { transform: none; opacity: 1; }
+}
+
+@keyframes dots-step {
+    0% { width: 0; }
+    100% { width: 3ch; }
+}
+
+@keyframes spin-cell {
+    0% { background: var(--red); }
+    12.5% { background: var(--pink); }
+    25% { background: #8C95A3; }
+}
+
+@keyframes dot-wave {
+    0% { transform: translateY(-8px); background: var(--red); }
+    25% { transform: none; background: var(--slate); }
+}
+
+@keyframes block-in {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}
+</style>
+</head>
+<body>
+<div class="stage" data-stage>
+    <canvas class="pixels" width="240" height="135"></canvas>
+    <div class="wash"></div>
+
+    <div class="shell">
+        <div class="corner left"><span class="label">Host</span><span class="value">Seiren</span></div>
+        <div class="corner right"><span class="label">Day</span><span class="value" data-clock="day-of-year"></span></div>
+
+        <div class="clock"><span data-clock="hours"></span><span class="colon">:</span><span data-clock="minutes"></span></div>
+        <div class="weekday"><i class="bar"></i><span data-clock="weekday"></span><i class="bar"></i></div>
+
+        <form data-login>
+            <button type="button" class="player" data-action="switch-user" title="Switch user">
+                <b data-bitmap="left"></b><span class="tag">Player 1:</span><span data-user-name></span><b data-bitmap="right"></b>
+            </button>
+
+            <div class="slot">
+                <label class="box">
+                    <span class="dots"></span>
+                    <input data-field="password" type="password" autocomplete="off" spellcheck="false" aria-label="Password">
+                </label>
+                <div class="prompt"><b data-bitmap="right"></b><span class="blink">Press any key</span><b data-bitmap="left"></b></div>
+                <div class="dialog"><b data-bitmap="fingerprint"></b><span class="dialog-text"></span></div>
+                <div class="ready"><span>Player 1 ready</span></div>
+            </div>
+
+            <div class="status">
+                <div class="loading"><span class="spinner"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span>Loading<span class="step"></span></span></div>
+                <div class="wrong">Wrong! Try again</div>
+                <div class="message" data-message></div>
+                <div class="caps" data-capslock>Caps lock</div>
+            </div>
+        </form>
+    </div>
+
+    <div class="hud">
+        <div class="power">
+            <button data-power="suspend" title="Sleep"><b data-bitmap="moon"></b>Sleep</button>
+            <button data-power="reboot" title="Restart"><b data-bitmap="restart"></b>Restart</button>
+            <button data-power="shutdown" title="Power off"><b data-bitmap="power"></b>Off</button>
+        </div>
+        <button class="session" data-action="session" title="Next session">
+            <span class="tag">Stage</span><b data-bitmap="left"></b><span data-session-name></span><b data-bitmap="right"></b>
+        </button>
+        <div class="keys">
+            <button type="button" class="peek" data-action="reveal" title="Show password"><i data-icon="view-visible"></i><b data-bitmap="eye"></b><span class="peek-text">Show</span></button>
+            <button type="button" class="start" data-action="login">Start</button>
+        </div>
+    </div>
+
+    <div class="wipe"></div>
+</div>
+<div class="demo-hint">password <b>lintel</b> · <b>Ctrl+Alt</b> + <b>↑↓</b> state · <b>←→</b> design · <b>W</b> wallpaper <span data-wallpaper-name></span> · <b>S</b> session · <b>U</b> user · <b>V</b> show password · <b>Z</b> sleep · <b>B</b> restart · <b>Q</b> power off · <a href="index.html">all</a></div>
+<script src="shared/icons.js"></script>
+<script src="shared/wallpapers.js"></script>
+<script src="shared/demo.js"></script>
+<script>
+const PIXEL_WIDTH = 240;
+const PIXEL_HEIGHT = 135;
+const RAMP = [[158, 167, 180], [194, 200, 209], [233, 191, 203], [244, 217, 224], [236, 238, 240]];
+const DOTS_VISIBLE = 15;
+const WIPE_COLUMNS = 16;
+const WIPE_ROWS = 9;
+const WIPE_START_MS = 700;
+const WIPE_STEP_MS = 40;
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+
+const BITMAPS = {
+    left: [
+        "...#",
+        "..##",
+        ".###",
+        "####",
+        ".###",
+        "..##",
+        "...#",
+    ],
+    right: [
+        "#...",
+        "##..",
+        "###.",
+        "####",
+        "###.",
+        "##..",
+        "#...",
+    ],
+    moon: [
+        "....####....",
+        "..###.......",
+        ".###........",
+        ".##.........",
+        "###.........",
+        "###.........",
+        "###.......#.",
+        "####.....##.",
+        ".#########..",
+        "..#######...",
+        "....###.....",
+        "............",
+    ],
+    restart: [
+        "...#####.#..",
+        "..##...####.",
+        ".##.....###.",
+        "##.....####.",
+        "##..........",
+        "##..........",
+        "##........##",
+        "##........##",
+        ".##......##.",
+        "..##....##..",
+        "...######...",
+        "............",
+    ],
+    power: [
+        ".....##.....",
+        "..#..##..#..",
+        ".##..##..##.",
+        "##...##...##",
+        "##...##...##",
+        "##........##",
+        "##........##",
+        "##........##",
+        ".##......##.",
+        "..###..###..",
+        "....####....",
+        "............",
+    ],
+    eye: [
+        "............",
+        "............",
+        "....####....",
+        "..##....##..",
+        ".#...##...#.",
+        "#...####...#",
+        "#...####...#",
+        ".#...##...#.",
+        "..##....##..",
+        "....####....",
+        "............",
+        "............",
+    ],
+    "eye-closed": [
+        "............",
+        "............",
+        "............",
+        "............",
+        "#..........#",
+        ".##......##.",
+        "...######...",
+        "..#..##..#..",
+        ".#...##...#.",
+        "............",
+        "............",
+        "............",
+    ],
+    fingerprint: [
+        "....#######.....",
+        "..##.......##...",
+        ".#..#######..#..",
+        "#..#.......#..#.",
+        "..#..#####..#..#",
+        ".#..#.....#..#.#",
+        ".#.#..###..#.#..",
+        "#..#.#...#.#..#.",
+        "#.#..#.#.#..#.#.",
+        "#.#.#..#..#.#.#.",
+        "..#.#.##.#..#...",
+        ".#..#.#..#.#..#.",
+        ".#.#..#.#..#.#..",
+        "...#.#..#.#..#..",
+        "..#..#.#..#.....",
+        ".....#.#.#......",
+    ],
+};
+
+const canvas = document.querySelector(".pixels");
+const context = canvas.getContext("2d", { willReadFrequently: true });
+const dots = document.querySelector(".dots");
+const dialog_text = document.querySelector(".dialog-text");
+const dialog_icon = document.querySelector(".dialog [data-bitmap]");
+const peek_text = document.querySelector(".peek-text");
+const peek_icon = document.querySelector(".peek [data-bitmap]");
+let wallpaper_painted = "";
+let dots_drawn = "";
+
+function bitmap_svg(name) {
+    const rows = BITMAPS[name];
+    console.assert(rows !== undefined, `unknown bitmap ${name}`);
+    const width = rows[0].length;
+    let path = "";
+    for (let y = 0; y < rows.length; y += 1) {
+        console.assert(rows[y].length === width, name, y);
+        for (let x = 0; x < width; x += 1) {
+            if (rows[y][x] === "#") path += `M${x} ${y}h1v1h-1z`;
+        }
+    }
+    return `<svg viewBox="0 0 ${width} ${rows.length}" shape-rendering="crispEdges"><path fill="currentColor" d="${path}"/></svg>`;
+}
+
+function bitmaps_draw() {
+    for (const node of document.querySelectorAll("[data-bitmap]")) node.innerHTML = bitmap_svg(node.dataset.bitmap);
+}
+
+function dither_threshold(x, y) {
+    return (BAYER[(y % 4) * 4 + (x % 4)] + 0.5) / 16;
+}
+
+function ramp_index(value, x, y) {
+    const level = value * (RAMP.length - 1);
+    const base = Math.floor(level);
+    return Math.min(RAMP.length - 1, base + (level - base > dither_threshold(x, y) ? 1 : 0));
+}
+
+function sky_paint() {
+    const image = context.createImageData(PIXEL_WIDTH, PIXEL_HEIGHT);
+    for (let y = 0; y < PIXEL_HEIGHT; y += 1) {
+        for (let x = 0; x < PIXEL_WIDTH; x += 1) {
+            const color = RAMP[ramp_index(0.35 + 0.65 * (y / PIXEL_HEIGHT), x, y)];
+            const at = (y * PIXEL_WIDTH + x) * 4;
+            image.data.set([color[0], color[1], color[2], 255], at);
+        }
+    }
+    context.putImageData(image, 0, 0);
+}
+
+function pixels_map() {
+    const image = context.getImageData(0, 0, PIXEL_WIDTH, PIXEL_HEIGHT);
+    let low = 1;
+    let high = 0;
+    const lumas = new Float32Array(PIXEL_WIDTH * PIXEL_HEIGHT);
+    for (let index = 0; index < lumas.length; index += 1) {
+        const at = index * 4;
+        const luma = (0.2126 * image.data[at] + 0.7152 * image.data[at + 1] + 0.0722 * image.data[at + 2]) / 255;
+        lumas[index] = luma;
+        low = Math.min(low, luma);
+        high = Math.max(high, luma);
+    }
+    const range = Math.max(0.2, high - low);
+    for (let y = 0; y < PIXEL_HEIGHT; y += 1) {
+        for (let x = 0; x < PIXEL_WIDTH; x += 1) {
+            const index = y * PIXEL_WIDTH + x;
+            const color = RAMP[ramp_index((lumas[index] - low) / range, x, y)];
+            image.data.set([color[0], color[1], color[2], 255], index * 4);
+        }
+    }
+    context.putImageData(image, 0, 0);
+}
+
+function wallpaper_paint() {
+    const value = getComputedStyle(document.documentElement).getPropertyValue("--wallpaper").trim();
+    if (value === wallpaper_painted) return;
+    wallpaper_painted = value;
+    const match = value.match(/^url\(["']?(.*?)["']?\)$/);
+    if (match === null) {
+        sky_paint();
+        return;
+    }
+    const image = new Image();
+    image.onload = () => {
+        if (wallpaper_painted !== value) return;
+        const scale = Math.max(PIXEL_WIDTH / image.naturalWidth, PIXEL_HEIGHT / image.naturalHeight);
+        const width = image.naturalWidth * scale;
+        const height = image.naturalHeight * scale;
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = "high";
+        context.drawImage(image, (PIXEL_WIDTH - width) / 2, (PIXEL_HEIGHT - height) / 2, width, height);
+        try {
+            pixels_map();
+        } catch {
+            return;
+        }
+    };
+    image.onerror = () => sky_paint();
+    image.src = match[1];
+}
+
+function dots_draw() {
+    const value = field_password.value;
+    const revealed = field_password.type === "text";
+    const has_input = value.length > 0;
+    stage.classList.toggle("has-input", has_input);
+    peek_text.textContent = revealed ? "Hide" : "Show";
+    const peek_bitmap = revealed ? "eye-closed" : "eye";
+    if (peek_icon.dataset.bitmap !== peek_bitmap) {
+        peek_icon.dataset.bitmap = peek_bitmap;
+        peek_icon.innerHTML = bitmap_svg(peek_bitmap);
+    }
+    const key = `${value.length}|${revealed ? value : ""}`;
+    if (key === dots_drawn) return;
+    dots_drawn = key;
+    dots.replaceChildren();
+    const shown = Math.min(value.length, DOTS_VISIBLE);
+    const visible = value.slice(value.length - shown);
+    for (let index = 0; index < shown; index += 1) {
+        const node = document.createElement("i");
+        if (revealed) {
+            node.className = "char";
+            node.textContent = visible[index];
+        } else {
+            node.className = "dot";
+            node.style.animationDelay = `${index * 100}ms`;
+        }
+        dots.append(node);
+    }
+    const cursor = document.createElement("i");
+    cursor.className = "cursor";
+    dots.append(cursor);
+}
+
+function dialog_draw() {
+    const text = message.textContent;
+    dialog_text.textContent = text;
+    let icon = "fingerprint";
+    if (text === POWER_TEXT.suspend) icon = "moon";
+    if (text === POWER_TEXT.reboot) icon = "restart";
+    if (text === POWER_TEXT.shutdown) icon = "power";
+    if (dialog_icon.dataset.bitmap !== icon) {
+        dialog_icon.dataset.bitmap = icon;
+        dialog_icon.innerHTML = bitmap_svg(icon);
+    }
+}
+
+function wipe_build() {
+    const wipe = document.querySelector(".wipe");
+    for (let row = 0; row < WIPE_ROWS; row += 1) {
+        for (let column = 0; column < WIPE_COLUMNS; column += 1) {
+            const block = document.createElement("i");
+            block.style.animationDelay = `${WIPE_START_MS + (row + column) * WIPE_STEP_MS}ms`;
+            wipe.append(block);
+        }
+    }
+}
+
+bitmaps_draw();
+wipe_build();
+sky_paint();
+wallpaper_paint();
+dots_draw();
+dialog_draw();
+field_password.addEventListener("input", dots_draw);
+document.addEventListener("click", dots_draw);
+new MutationObserver(() => {
+    dots_draw();
+    dialog_draw();
+}).observe(stage, { attributes: true, attributeFilter: ["class"] });
+new MutationObserver(dialog_draw).observe(message, { childList: true, characterData: true, subtree: true });
+new MutationObserver(wallpaper_paint).observe(document.documentElement, { attributes: true, attributeFilter: ["style"] });
+</script>
+</body>
+</html>

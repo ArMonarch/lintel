@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · 16 Readout</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+@font-face {
+    font-family: "Orbitron";
+    src: url("assets/fonts/Orbitron-Medium.otf") format("opentype");
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: "Orbitron";
+    src: url("assets/fonts/Orbitron-Bold.otf") format("opentype");
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: "Orbitron";
+    src: url("assets/fonts/Orbitron-Black.otf") format("opentype");
+    font-weight: 900;
+}
+
+.stage {
+    --k: #000000;
+    --w: #f2f2f2;
+    --r: #d5231e;
+    --b: #1d4ed8;
+    --g: #16a34a;
+    --y: #f2c410;
+    --mute: #7c7c7c;
+    --faint: #3a3a3a;
+    --line: rgba(242, 242, 242, 0.16);
+    --wide: "Orbitron", "Adwaita Sans", sans-serif;
+    --mono: "Iosevka", "Iosevka Nerd Font", "Iosevka NF", "Adwaita Mono", monospace;
+    background: var(--k);
+    color: var(--w);
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.by-state > span { display: none; }
+
+.is-idle .by-state .s-idle,
+.is-busy .by-state .s-busy,
+.is-error .by-state .s-error,
+.is-info .by-state .s-info,
+.is-success .by-state .s-success { display: inline; }
+
+.top {
+    position: absolute;
+    left: 42px;
+    right: 42px;
+    top: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    font-size: 14px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--mute);
+}
+
+.top .mark {
+    font: 900 17px/1 var(--wide);
+    letter-spacing: 0.12em;
+    color: var(--w);
+}
+
+.top .chips { display: flex; gap: 4px; }
+.top .chips i { width: 14px; height: 14px; }
+.top .rule { flex: 1; height: 1px; background: var(--line); }
+.top .state { display: flex; align-items: center; gap: 12px; color: var(--w); }
+.top .lamp { width: 12px; height: 12px; background: var(--mute); }
+
+.is-busy .top .lamp { background: var(--y); animation: blink 500ms infinite steps(1, end); }
+.is-error .top .lamp { background: var(--r); }
+.is-info .top .lamp { background: var(--b); }
+.is-success .top .lamp { background: var(--g); }
+
+.tile {
+    position: absolute;
+    width: 596px;
+    height: 470px;
+    display: flex;
+    flex-direction: column;
+    background: var(--k);
+    box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.t-clk { left: 42px; top: 76px; }
+.t-usr { left: 662px; top: 76px; }
+.t-pwd { left: 1282px; top: 76px; }
+.t-pwr { left: 42px; top: 570px; }
+.t-ses { left: 662px; top: 570px; }
+.t-msg { left: 1282px; top: 570px; }
+
+.band {
+    height: 60px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    padding: 0 22px 0 26px;
+    background: var(--band, var(--w));
+    color: var(--band-ink, var(--k));
+}
+
+.code {
+    position: relative;
+    top: 4px;
+    font: 900 36px/1 var(--wide);
+    letter-spacing: 0.08em;
+}
+
+.code > span + span { display: none; }
+
+.tag {
+    margin-left: auto;
+    display: flex;
+    gap: 18px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.tag b { font-weight: 800; }
+
+.t-clk { --band: var(--w); }
+.t-usr { --band: var(--y); }
+.t-pwd { --band: var(--g); }
+.t-ses { --band: var(--b); --band-ink: var(--w); }
+.t-pwr { --band: var(--r); --band-ink: var(--w); }
+.t-msg { --band: #262626; --band-ink: var(--mute); }
+
+.body {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    padding: 30px 32px 0;
+}
+
+.foot {
+    height: 46px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 0 32px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mute);
+}
+
+.foot .end { margin-left: auto; }
+.foot b { color: var(--w); font-weight: 600; }
+
+.label {
+    font-size: 13px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--mute);
+}
+
+.key {
+    display: inline-grid;
+    place-items: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 5px;
+    border: 1px solid var(--faint);
+    color: var(--w);
+    font-size: 12px;
+    letter-spacing: 0;
+}
+
+.source { display: none; }
+
+.digits {
+    display: flex;
+    align-items: center;
+    height: 138px;
+    margin-top: -6px;
+    font: 500 150px/1 var(--wide);
+}
+
+.digits .d { width: 0.8em; text-align: center; }
+
+.digits .colon {
+    width: 0.3em;
+    height: 0.62em;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.1em 0;
+}
+
+.digits .colon::before,
+.digits .colon::after {
+    content: "";
+    width: 16px;
+    height: 16px;
+    background: var(--w);
+}
+
+.ticks {
+    margin-top: 22px;
+    height: 26px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.ticks i { width: 4px; height: 12px; background: var(--faint); }
+.ticks i:nth-child(5n + 1) { height: 26px; }
+.ticks i.is-on { background: var(--w); }
+.ticks i.is-now { background: var(--r); }
+
+.tick-labels {
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--mute);
+}
+
+.readouts {
+    margin-top: 26px;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    border-left: 1px solid var(--line);
+}
+
+.readouts > div { padding: 2px 0 2px 16px; border-right: 1px solid var(--line); }
+.readouts > div:last-child { border-right: 0; }
+
+.readouts b {
+    display: block;
+    margin-top: 8px;
+    font: 700 22px/1 var(--wide);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.who {
+    display: flex;
+    align-items: flex-start;
+    gap: 22px;
+}
+
+.initial {
+    width: 84px;
+    height: 84px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    background: var(--y);
+    color: var(--k);
+    font: 900 50px/1 var(--wide);
+}
+
+.name-block { min-width: 0; flex: 1; }
+
+.name {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    text-align: left;
+    font: 700 40px/1 var(--wide);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.name:hover { color: var(--y); }
+
+.chart {
+    position: relative;
+    height: 150px;
+    margin-top: 34px;
+    padding-left: 44px;
+}
+
+.chart .axis {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--mute);
+}
+
+.bars {
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    border-bottom: 1px solid var(--w);
+    background: repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 50%);
+}
+
+.bars i { flex: 1; background: var(--w); }
+.bars i:last-child { background: var(--y); }
+
+.pwd-label { display: flex; align-items: baseline; justify-content: space-between; }
+.is-error .pwd-hint { color: var(--r); }
+.is-busy .pwd-hint { color: var(--y); }
+
+.caps {
+    padding: 3px 8px;
+    background: var(--y);
+    color: var(--k);
+    font-weight: 800;
+    letter-spacing: 0.2em;
+}
+
+.entry {
+    position: relative;
+    display: block;
+    height: 126px;
+    margin-top: 22px;
+}
+
+.entry input {
+    position: absolute;
+    left: -4px;
+    top: -6px;
+    z-index: 2;
+    width: calc(100% + 8px);
+    height: 48px;
+    padding: 0 6px;
+    font: 700 34px/1 var(--wide);
+    letter-spacing: 0.08em;
+    color: transparent;
+    caret-color: transparent;
+}
+
+.entry input::selection { background: transparent; }
+
+.cells {
+    display: grid;
+    grid-template-columns: repeat(12, 36px);
+    grid-auto-rows: 36px;
+    gap: 9px;
+    justify-content: space-between;
+}
+
+.cells i {
+    display: grid;
+    place-items: center;
+    box-shadow: inset 0 0 0 1px var(--faint);
+    font: 700 17px/1 var(--wide);
+    color: var(--k);
+}
+
+.cells i.is-on { background: var(--w); box-shadow: none; }
+.cells i.is-cursor { box-shadow: inset 0 0 0 2px var(--g); }
+.entry input:focus ~ .cells i.is-cursor { background: var(--g); animation: blink 1000ms infinite steps(1, end); }
+.is-error .entry input ~ .cells i.is-cursor,
+.is-error .entry input:focus ~ .cells i.is-cursor { background: none; box-shadow: inset 0 0 0 2px var(--r); animation: none; }
+
+.reveal-hint > span:nth-child(2) { display: none; }
+.is-revealed .reveal-hint > span:nth-child(1) { display: none; }
+.is-revealed .reveal-hint > span:nth-child(2) { display: inline; }
+
+.scan {
+    position: absolute;
+    left: -4px;
+    top: -8px;
+    width: 44px;
+    height: 142px;
+    z-index: 3;
+    background: var(--y);
+    opacity: 0.9;
+    display: none;
+}
+
+.is-busy .scan { display: block; animation: scan 1200ms steps(12, jump-none) infinite; }
+
+@keyframes scan {
+    from { transform: translateX(0); }
+    to { transform: translateX(496px); }
+}
+
+.t-pwd .body { display: flex; flex-direction: column; }
+
+.controls {
+    margin-top: auto;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.meter { flex: 1; }
+
+.meter b {
+    display: block;
+    margin-top: 8px;
+    font: 700 22px/1 var(--wide);
+    letter-spacing: 0.06em;
+}
+
+.meter b small { font-size: 14px; color: var(--mute); letter-spacing: 0.1em; }
+
+.reveal {
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.reveal i[data-icon] { width: 24px; height: 24px; }
+.reveal:hover { box-shadow: inset 0 0 0 1px var(--w); }
+
+.send {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 22px;
+    background: var(--g);
+    color: var(--k);
+    font: 900 20px/1 var(--wide);
+    letter-spacing: 0.12em;
+}
+
+.send:hover { background: var(--w); }
+.send i[data-icon] { width: 22px; height: 22px; }
+
+.is-busy .t-pwd .code > span:first-child { display: none; }
+.is-busy .t-pwd .code > span + span { display: inline; }
+.is-busy .t-pwd { --band: var(--y); }
+.is-busy .send { background: var(--faint); color: var(--mute); }
+.is-busy .cells i.is-cursor { background: none; box-shadow: inset 0 0 0 1px var(--faint); animation: none; }
+
+.is-error .cells i { animation: cell-fault 600ms 1 steps(1, end); }
+
+@keyframes cell-fault {
+    0% { box-shadow: inset 0 0 0 2px var(--r); }
+    33% { box-shadow: inset 0 0 0 1px var(--faint); }
+    66% { box-shadow: inset 0 0 0 2px var(--r); }
+}
+
+.rows { display: flex; flex-direction: column; gap: 8px; }
+
+.row {
+    height: 74px;
+    display: grid;
+    grid-template-columns: 40px 52px 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 0 18px 0 14px;
+    text-align: left;
+    box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.row .n { font-size: 13px; color: var(--mute); letter-spacing: 0.1em; }
+
+.row .c {
+    height: 30px;
+    display: grid;
+    place-items: center;
+    box-shadow: inset 0 0 0 1px currentColor;
+    font: 900 14px/1 var(--wide);
+    letter-spacing: 0.1em;
+}
+
+.row .s {
+    font: 700 22px/1 var(--wide);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.row .t { font-size: 12px; letter-spacing: 0.2em; color: var(--mute); }
+.row:hover { box-shadow: inset 0 0 0 1px var(--w); }
+.row.is-on { background: var(--w); color: var(--k); box-shadow: none; }
+.row.is-on .n,
+.row.is-on .t { color: var(--k); }
+.row.is-on .c { background: var(--b); color: var(--w); box-shadow: none; }
+
+.row.is-empty { box-shadow: none; border: 1px dashed var(--faint); }
+.row.is-empty .c,
+.row.is-empty .s,
+.row.is-empty .t { color: var(--faint); }
+.row.is-empty .c { box-shadow: inset 0 0 0 1px var(--faint); }
+
+.next {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--w);
+    letter-spacing: 0.2em;
+}
+
+.next:hover { color: var(--y); }
+
+.launch {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    visibility: hidden;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 140px;
+}
+
+.launch .big {
+    margin-top: 26px;
+    font: 900 132px/1.02 var(--wide);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.launch .blocks {
+    margin-top: 60px;
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    gap: 10px;
+    height: 34px;
+}
+
+.launch .blocks i { box-shadow: inset 0 0 0 1px var(--faint); }
+
+.is-success .launch .blocks i {
+    animation: block-on 1ms forwards steps(1, end);
+    animation-delay: calc(1250ms + var(--i) * 45ms);
+}
+
+.launch .after {
+    margin-top: 22px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--mute);
+}
+
+@keyframes block-on {
+    to { background: var(--g); box-shadow: none; }
+}
+
+.subs {
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding-bottom: 28px;
+}
+
+.sub {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 18px 18px;
+    text-align: left;
+    box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.sub .c { font: 900 30px/1 var(--wide); letter-spacing: 0.08em; }
+
+.sub .rail { display: flex; gap: 4px; margin-top: 14px; }
+.sub .rail i { width: 18px; height: 6px; background: var(--faint); }
+.sub .rail i.is-on { background: currentColor; }
+
+.sub i[data-icon] { width: 52px; height: 52px; margin: auto 0; }
+
+.sub .l {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--mute);
+}
+
+.sub:hover { background: var(--w); color: var(--k); box-shadow: none; }
+.sub:hover .l { color: var(--k); }
+.sub.off:hover { background: var(--r); color: var(--w); }
+.sub.off:hover .l { color: var(--w); }
+.sub.off .rail i.is-on { background: var(--r); }
+.sub.off:hover .rail i.is-on { background: var(--w); }
+
+.carrier {
+    position: absolute;
+    left: 32px;
+    right: 32px;
+    top: 50%;
+    height: 2px;
+    background: repeating-linear-gradient(to right, var(--faint) 0 14px, transparent 14px 22px);
+}
+
+.msg-text {
+    position: relative;
+    display: none;
+    flex-direction: column;
+    height: 100%;
+}
+
+.msg-head {
+    display: none;
+    font: 900 50px/1.08 var(--wide);
+    letter-spacing: 0.04em;
+}
+
+.message {
+    margin-top: 18px;
+    font: 700 34px/1.18 var(--wide);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+}
+
+.activity {
+    margin-top: auto;
+    margin-bottom: 30px;
+    display: none;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 8px;
+    height: 18px;
+}
+
+.activity i { background: var(--faint); animation: activity 1200ms infinite steps(1); animation-delay: calc(var(--i) * 100ms); }
+
+@keyframes activity {
+    0% { background: var(--y); }
+    25% { background: var(--faint); }
+}
+
+.is-busy .t-msg,
+.is-error .t-msg,
+.is-info .t-msg { --band-ink: var(--k); }
+.is-busy .t-msg { --band: var(--y); }
+.is-error .t-msg { --band: var(--w); background: var(--r); box-shadow: none; }
+.is-info .t-msg { --band: var(--w); background: var(--b); box-shadow: none; }
+.is-busy .msg-text,
+.is-error .msg-text,
+.is-info .msg-text { display: flex; }
+.is-busy .carrier,
+.is-error .carrier,
+.is-info .carrier { display: none; }
+.is-busy .activity { display: grid; }
+.is-busy .message::after { content: "_"; animation: blink 500ms infinite steps(1, end); }
+
+.is-error .msg-head { display: block; }
+.is-error .message { font: 600 18px/1.5 var(--mono); letter-spacing: 0.12em; }
+.is-error .t-msg .foot { color: var(--w); border-color: rgba(242, 242, 242, 0.4); }
+.is-error .t-msg .body { animation: fault 450ms 1 steps(1, end); }
+.is-info .t-msg .foot { color: var(--w); border-color: rgba(242, 242, 242, 0.4); }
+.is-info .t-msg .body { animation: notice 300ms 1 steps(1, end); }
+
+@keyframes fault {
+    0% { transform: translateX(-12px); }
+    16% { transform: translateX(12px); opacity: 0; }
+    33% { transform: translateX(-8px); opacity: 1; }
+    50% { transform: translateX(6px); }
+    66% { transform: translateX(-3px); }
+    83% { transform: translateX(0); }
+}
+
+@keyframes notice {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    75% { opacity: 0; }
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+.is-success .t-clk { --off: 0ms; }
+.is-success .t-usr { --off: 110ms; }
+.is-success .t-pwd { --off: 220ms; }
+.is-success .t-msg { --off: 330ms; }
+.is-success .t-pwr { --off: 440ms; }
+.is-success .top { --off: 550ms; }
+
+.is-success .tile:not(.t-ses),
+.is-success .top { animation: tile-off 270ms forwards steps(1, end); animation-delay: var(--off); }
+
+@keyframes tile-off {
+    0% { opacity: 1; }
+    33% { opacity: 1; filter: invert(1); }
+    66% { opacity: 0.35; filter: none; }
+    100% { opacity: 0; }
+}
+
+.is-success .t-ses {
+    z-index: 5;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 1080px;
+    box-shadow: none;
+    transition: left 420ms steps(6, end) 760ms, top 420ms steps(6, end) 760ms, width 420ms steps(6, end) 760ms, height 420ms steps(6, end) 760ms;
+}
+
+.is-success .t-ses .rows,
+.is-success .t-ses .foot { visibility: hidden; transition: visibility 0s 760ms; }
+.is-success .t-ses .band { --band: var(--g); --band-ink: var(--k); transition: background 0s 760ms; }
+.is-success .t-ses .launch { visibility: visible; transition: visibility 0s 1200ms; }
+
+</style>
+</head>
+<body>
+<div class="stage" data-stage>
+    <header class="top">
+        <span class="mark">LINTEL</span>
+        <span>seiren</span>
+        <span>greetd · vt1</span>
+        <span class="chips"><i style="background:#f2f2f2"></i><i style="background:#f2c410"></i><i style="background:#16a34a"></i><i style="background:#d5231e"></i><i style="background:#1d4ed8"></i><i style="background:#262626"></i></span>
+        <span class="rule"></span>
+        <span>day <span data-clock="day-of-year"></span></span>
+        <span class="state by-state">
+            <span class="s-idle">standby</span>
+            <span class="s-busy">authenticating</span>
+            <span class="s-error">fault</span>
+            <span class="s-info">notice</span>
+            <span class="s-success">handover</span>
+            <i class="lamp"></i>
+        </span>
+    </header>
+
+    <section class="tile t-clk">
+        <div class="band">
+            <b class="code">CLK</b>
+            <span class="tag"><span>local time</span><b>01</b></span>
+        </div>
+        <div class="body">
+            <span class="source" data-clock="hours"></span>
+            <span class="source" data-clock="minutes"></span>
+            <div class="digits" data-digits>
+                <span class="d"></span><span class="d"></span><span class="colon"></span><span class="d"></span><span class="d"></span>
+            </div>
+            <div class="ticks" data-ticks></div>
+            <div class="tick-labels"><span>00</span><span>15</span><span>30</span><span>45</span><span>60</span></div>
+            <div class="readouts">
+                <div><span class="label">date</span><b data-clock="short"></b></div>
+                <div><span class="label">year</span><b data-clock="year"></b></div>
+                <div><span class="label">sec</span><b data-seconds>00</b></div>
+            </div>
+        </div>
+        <div class="foot"><span>24 h</span><span>sync <b>rtc</b></span><span class="end" data-clock="weekday"></span></div>
+    </section>
+
+    <section class="tile t-usr">
+        <div class="band">
+            <b class="code">USR</b>
+            <span class="tag"><span>operator</span><b>02</b></span>
+        </div>
+        <div class="body">
+            <div class="who">
+                <span class="initial" data-user-initial></span>
+                <div class="name-block">
+                    <span class="label">signing in as</span>
+                    <button type="button" class="name" data-action="switch-user" title="Switch user"><span data-user-name></span></button>
+                </div>
+            </div>
+            <div class="chart">
+                <div class="axis"><span>100</span><span>050</span><span>000</span></div>
+                <div class="bars" data-bars></div>
+            </div>
+        </div>
+        <div class="foot"><span>uid <b data-uid>1000</b></span><span><b data-user-count>01</b> / <span data-user-total>02</span></span><button type="button" class="next end" data-action="switch-user">switch <span class="key">U</span></button></div>
+    </section>
+
+    <form class="tile t-pwd" data-login>
+        <div class="band">
+            <b class="code"><span>PWD</span><span>AUT</span></b>
+            <span class="tag"><span>passcode</span><b>03</b></span>
+        </div>
+        <div class="body">
+            <div class="pwd-label">
+                <span class="label pwd-hint by-state">
+                    <span class="s-idle">enter passcode · return to send</span>
+                    <span class="s-busy">verifying with pam · hold</span>
+                    <span class="s-error">passcode rejected · retype to clear</span>
+                    <span class="s-info">enter passcode · return to send</span>
+                    <span class="s-success">passcode accepted</span>
+                </span>
+                <span class="label caps" data-capslock>caps</span>
+            </div>
+            <label class="entry">
+                <input data-field="password" type="password" aria-label="Password" autocomplete="off">
+                <div class="cells" data-cells></div>
+                <i class="scan"></i>
+            </label>
+            <div class="controls">
+                <div class="meter"><span class="label">length</span><b><span data-length>00</span> <small>/ 1024 B</small></b></div>
+                <button type="button" class="reveal" data-action="reveal" title="Show password"><i data-icon="view-visible"></i></button>
+                <button type="submit" class="send">SEND <i data-icon="go-next"></i></button>
+            </div>
+        </div>
+        <div class="foot"><span>pam · login</span><span class="end reveal-hint"><span>show</span><span>hide</span> <span class="key">V</span></span></div>
+    </form>
+
+    <section class="tile t-pwr">
+        <div class="band">
+            <b class="code">PWR</b>
+            <span class="tag"><span>system</span><b>04</b></span>
+        </div>
+        <div class="body">
+            <div class="subs">
+                <button class="sub" data-power="suspend" title="Suspend">
+                    <span class="c">SUS</span>
+                    <span class="rail"><i class="is-on"></i><i></i><i></i></span>
+                    <i data-icon="system-suspend"></i>
+                    <span class="l">suspend <span class="key">Z</span></span>
+                </button>
+                <button class="sub" data-power="reboot" title="Restart">
+                    <span class="c">RST</span>
+                    <span class="rail"><i class="is-on"></i><i class="is-on"></i><i></i></span>
+                    <i data-icon="system-reboot"></i>
+                    <span class="l">restart <span class="key">B</span></span>
+                </button>
+                <button class="sub off" data-power="shutdown" title="Power off">
+                    <span class="c">OFF</span>
+                    <span class="rail"><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i></span>
+                    <i data-icon="system-shutdown"></i>
+                    <span class="l">power off <span class="key">Q</span></span>
+                </button>
+            </div>
+        </div>
+        <div class="foot"><span>logind</span><span><b>03</b> actions</span><span class="end">ctrl + alt + <b>key</b></span></div>
+    </section>
+
+    <section class="tile t-ses">
+        <div class="band">
+            <b class="code">SES</b>
+            <span class="tag"><span>session</span><b>05</b></span>
+        </div>
+        <div class="body">
+            <div class="rows" data-rows></div>
+            <div class="launch">
+                <span class="label">starting session · handing over to greetd</span>
+                <span class="big" data-session-name></span>
+                <div class="blocks" data-blocks></div>
+                <div class="after"><span>seiren</span><span data-user-name></span><span data-clock="time"></span></div>
+            </div>
+        </div>
+        <div class="foot"><span><b data-session-count>03</b> / <span data-session-rows>04</span> entries</span><span data-session-name hidden></span><button type="button" class="next end" data-action="session">next <span class="key">S</span></button></div>
+    </section>
+
+    <section class="tile t-msg">
+        <div class="band">
+            <b class="code">MSG</b>
+            <span class="tag"><span>status</span><b>06</b></span>
+        </div>
+        <div class="body">
+            <i class="carrier"></i>
+            <div class="msg-text">
+                <span class="msg-head">WRONG<br>PASSWORD</span>
+                <span class="message" data-message></span>
+                <div class="activity" data-activity></div>
+            </div>
+        </div>
+        <div class="foot by-state">
+            <span class="s-idle">no traffic</span>
+            <span class="s-busy">awaiting greetd</span>
+            <span class="s-error">auth error · retype to clear</span>
+            <span class="s-info">info message</span>
+            <span class="s-success">success</span>
+        </div>
+    </section>
+</div>
+<div class="demo-hint">password <b>lintel</b> · <b>Ctrl+Alt</b> + <b>↑↓</b> state · <b>←→</b> design · <b>W</b> wallpaper <span data-wallpaper-name></span> · <b>S</b> session · <b>U</b> user · <b>V</b> show password · <b>Z</b> sleep · <b>B</b> restart · <b>Q</b> power off · <a href="index.html">all</a></div>
+<script src="shared/icons.js"></script>
+<script src="shared/wallpapers.js"></script>
+<script src="shared/demo.js"></script>
+<script>
+const CELLS_COUNT = 36;
+const TICKS_COUNT = 60;
+const BARS_COUNT = 18;
+const BLOCKS_COUNT = 24;
+const ACTIVITY_COUNT = 12;
+const SESSION_ROWS = 4;
+const UID_FIRST = 1000;
+
+const readout_cells = document.querySelector("[data-cells]");
+const readout_ticks = document.querySelector("[data-ticks]");
+const readout_bars = document.querySelector("[data-bars]");
+const readout_rows = document.querySelector("[data-rows]");
+const readout_digits = document.querySelectorAll("[data-digits] .d");
+const readout_hours = document.querySelector('.source[data-clock="hours"]');
+const readout_minutes = document.querySelector('.source[data-clock="minutes"]');
+const readout_session = document.querySelector(".t-ses .foot [data-session-name]");
+const readout_user = document.querySelector(".t-usr [data-user-name]");
+console.assert(readout_digits.length === 4);
+console.assert(SESSIONS.length > 0 && SESSIONS.length <= SESSION_ROWS, "SES tile holds four rows");
+
+function spans_fill(parent, count) {
+    for (let i = 0; i < count; i += 1) {
+        const span = document.createElement("i");
+        span.style.setProperty("--i", i);
+        parent.append(span);
+    }
+}
+
+function cells_render() {
+    const value = field_password.value;
+    const length = value.length;
+    const revealed = field_password.type === "text";
+    form.classList.toggle("is-revealed", revealed);
+    readout_cells.querySelectorAll("i").forEach((cell, i) => {
+        cell.classList.toggle("is-on", i < length);
+        cell.classList.toggle("is-cursor", i === length);
+        cell.textContent = revealed && i < length ? value[i] : "";
+    });
+    text_set("[data-length]", String(length).padStart(2, "0"));
+}
+
+function digits_render() {
+    const text = readout_hours.textContent + readout_minutes.textContent;
+    if (text.length !== 4) return;
+    readout_digits.forEach((digit, i) => { digit.textContent = text[i]; });
+}
+
+function ticks_render() {
+    const second = new Date().getSeconds();
+    readout_ticks.querySelectorAll("i").forEach((tick, i) => {
+        tick.classList.toggle("is-on", i < second);
+        tick.classList.toggle("is-now", i === second);
+    });
+    text_set("[data-seconds]", String(second).padStart(2, "0"));
+}
+
+function bars_render() {
+    const name = USERS[user_index];
+    console.assert(name.length > 0);
+    readout_bars.querySelectorAll("i").forEach((bar, i) => {
+        const code = name.charCodeAt(i % name.length);
+        const height = 18 + ((code * (i + 3) * 37 + i * 11) % 80);
+        bar.style.height = `${height}%`;
+    });
+    text_set("[data-uid]", String(UID_FIRST + user_index));
+    text_set("[data-user-count]", String(user_index + 1).padStart(2, "0"));
+}
+
+function session_tag(name) {
+    if (name.toLowerCase().includes("shell")) return "TTY";
+    return "WAYLAND";
+}
+
+function rows_render() {
+    readout_rows.replaceChildren();
+    for (let i = 0; i < SESSION_ROWS; i += 1) {
+        const name = SESSIONS[i];
+        const row = document.createElement(name === undefined ? "div" : "button");
+        row.className = "row";
+        row.innerHTML = `<span class="n">0${i + 1}</span><span class="c"></span><span class="s"></span><span class="t"></span>`;
+        if (name === undefined) {
+            row.classList.add("is-empty");
+            row.querySelector(".c").textContent = "--";
+            row.querySelector(".s").textContent = "empty";
+            row.querySelector(".t").textContent = "slot";
+        } else {
+            row.type = "button";
+            row.classList.toggle("is-on", i === session_index);
+            row.dataset.row = i;
+            row.querySelector(".c").textContent = name.slice(0, 2).toUpperCase();
+            row.querySelector(".s").textContent = name;
+            row.querySelector(".t").textContent = session_tag(name);
+        }
+        readout_rows.append(row);
+    }
+}
+
+function on_row_click(event) {
+    const row = event.target.closest("[data-row]");
+    if (row === null) return;
+    session_index = Number(row.dataset.row);
+    console.assert(session_index >= 0 && session_index < SESSIONS.length);
+    text_set("[data-session-name]", SESSIONS[session_index]);
+    field_password.focus();
+}
+
+spans_fill(readout_cells, CELLS_COUNT);
+spans_fill(readout_ticks, TICKS_COUNT);
+spans_fill(readout_bars, BARS_COUNT);
+spans_fill(document.querySelector("[data-blocks]"), BLOCKS_COUNT);
+spans_fill(document.querySelector("[data-activity]"), ACTIVITY_COUNT);
+text_set("[data-user-total]", String(USERS.length).padStart(2, "0"));
+text_set("[data-session-count]", String(SESSIONS.length).padStart(2, "0"));
+text_set("[data-session-rows]", String(SESSION_ROWS).padStart(2, "0"));
+
+new MutationObserver(digits_render).observe(readout_minutes, { childList: true });
+new MutationObserver(digits_render).observe(readout_hours, { childList: true });
+new MutationObserver(rows_render).observe(readout_session, { childList: true });
+new MutationObserver(bars_render).observe(readout_user, { childList: true });
+new MutationObserver(cells_render).observe(stage, { attributes: true, attributeFilter: ["class"] });
+new MutationObserver(cells_render).observe(field_password, { attributes: true, attributeFilter: ["type"] });
+field_password.addEventListener("input", cells_render);
+readout_rows.addEventListener("click", on_row_click);
+
+digits_render();
+ticks_render();
+bars_render();
+rows_render();
+cells_render();
+setInterval(ticks_render, 1000);
+</script>
+</body>
+</html>

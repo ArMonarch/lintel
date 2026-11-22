@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · 31 Quiet</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+@font-face {
+    font-family: "Fraunces Display";
+    src: url("assets/fonts/Fraunces72ptSoft-Light.otf") format("opentype");
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Fraunces Display";
+    src: url("assets/fonts/Fraunces72ptSoft-LightItalic.otf") format("opentype");
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Fraunces Text";
+    src: url("assets/fonts/Fraunces9ptSoft-Light.otf") format("opentype");
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Fraunces Text";
+    src: url("assets/fonts/Fraunces9ptSoft-Italic.otf") format("opentype");
+    font-style: italic;
+}
+
+.stage {
+    --night: #0b1020;
+    --well: #070b17;
+    --gold: #d4a853;
+    --gold-soft: rgba(212, 168, 83, 0.62);
+    --gold-faint: rgba(212, 168, 83, 0.34);
+    --cream: #ece4d2;
+    --cream-soft: rgba(236, 228, 210, 0.66);
+    --ember: #b4605a;
+    --ember-text: #dcb2a8;
+    --slow: cubic-bezier(0.33, 0, 0.2, 1);
+    background: var(--night);
+    color: var(--cream);
+    font-family: "Fraunces Text", Georgia, serif;
+    font-feature-settings: "lnum" 1;
+}
+
+.wall {
+    position: absolute;
+    inset: 0;
+    background: var(--wallpaper) center / cover no-repeat;
+    filter: saturate(0.2) brightness(0.7) contrast(0.92);
+    opacity: 0.68;
+    transition: opacity 1600ms var(--slow), filter 1600ms var(--slow);
+}
+
+.tint {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(1200px 820px at 34% 52%, rgba(11, 16, 32, 0.3), rgba(11, 16, 32, 0) 70%),
+        linear-gradient(90deg, rgba(11, 16, 32, 0.9) 0%, rgba(11, 16, 32, 0.8) 46%, rgba(11, 16, 32, 0.42) 100%),
+        radial-gradient(140% 120% at 50% 45%, rgba(5, 8, 18, 0) 55%, rgba(5, 8, 18, 0.7) 100%);
+}
+
+.grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.06;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>");
+    pointer-events: none;
+}
+
+.dissolve {
+    transition: opacity 1400ms var(--slow), filter 1400ms var(--slow), transform 1400ms var(--slow);
+}
+
+.content {
+    position: absolute;
+    left: 640px;
+    top: 0;
+    bottom: 0;
+    width: 900px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-bottom: 40px;
+}
+
+.clock {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 17px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-feature-settings: "lnum" 1, "tnum" 1;
+}
+
+.clock .rule {
+    width: 44px;
+    height: 1px;
+    background: var(--gold-faint);
+}
+
+.clock .date { color: var(--gold-soft); }
+
+.greeting {
+    margin-top: 34px;
+    font-family: "Fraunces Display", Georgia, serif;
+    font-size: 112px;
+    line-height: 1.06;
+    letter-spacing: -0.012em;
+    font-weight: 300;
+}
+
+.swap { display: grid; }
+
+.swap > span {
+    grid-area: 1 / 1;
+    transition: opacity 900ms var(--slow), filter 900ms var(--slow);
+}
+
+.swap .no {
+    opacity: 0;
+    filter: blur(6px);
+    color: var(--ember-text);
+}
+
+.greeting em {
+    display: block;
+    font-style: italic;
+    color: rgba(236, 228, 210, 0.74);
+}
+
+form {
+    position: relative;
+    margin: 72px 0 80px;
+    width: 560px;
+}
+
+.who {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0 0 16px 4px;
+    font-size: 19px;
+    color: var(--cream-soft);
+}
+
+.who i { font-style: italic; color: rgba(236, 228, 210, 0.42); }
+
+.field {
+    position: relative;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px 0 28px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #060914, #090d1b);
+    box-shadow:
+        inset 0 4px 10px rgba(0, 0, 0, 0.7),
+        inset 0 1px 2px rgba(0, 0, 0, 0.8),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+        0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.field::before,
+.field::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 21px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 900ms var(--slow), transform 900ms var(--slow);
+}
+
+.field::before {
+    box-shadow:
+        0 0 0 1px rgba(212, 168, 83, 0.42),
+        0 0 22px 2px rgba(212, 168, 83, 0.24),
+        0 0 80px 10px rgba(212, 168, 83, 0.12);
+}
+
+.field::after {
+    box-shadow:
+        0 0 0 1px rgba(188, 98, 92, 0.62),
+        0 0 24px 2px rgba(188, 98, 92, 0.3),
+        0 0 80px 10px rgba(160, 72, 72, 0.14);
+}
+
+.field:focus-within::before { opacity: 1; }
+
+.field input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    font-family: "Fraunces Text", Georgia, serif;
+    font-size: 24px;
+    letter-spacing: 0.32em;
+    color: var(--cream);
+    caret-color: var(--gold);
+}
+
+.field input[type="text"] { letter-spacing: 0.06em; }
+
+.field input::placeholder {
+    font-style: italic;
+    letter-spacing: 0.02em;
+    color: rgba(236, 228, 210, 0.3);
+    opacity: 1;
+}
+
+.field button {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: rgba(212, 168, 83, 0.6);
+    transition: color 300ms, background 300ms;
+}
+
+.field button:hover { color: var(--gold); background: rgba(212, 168, 83, 0.07); }
+.field button i[data-icon] { width: 20px; height: 20px; }
+
+.notes {
+    position: absolute;
+    left: 4px;
+    right: 0;
+    top: 100%;
+    margin-top: 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    font-size: 20px;
+    font-style: italic;
+    transition: opacity 900ms var(--slow), transform 1400ms var(--slow);
+}
+
+.message { color: var(--gold-soft); transition: color 600ms, font-size 1400ms var(--slow); }
+.message:empty { display: none; }
+.hint { color: rgba(236, 228, 210, 0.4); display: none; }
+.is-idle .hint { display: inline; }
+.capslock { color: var(--gold); font-size: 17px; letter-spacing: 0.04em; }
+
+.corner {
+    position: absolute;
+    right: 76px;
+    bottom: 62px;
+    display: flex;
+    align-items: baseline;
+    gap: 34px;
+    font-size: 17px;
+    letter-spacing: 0.05em;
+    color: var(--gold-soft);
+}
+
+.corner .group { display: flex; align-items: baseline; gap: 28px; }
+
+.corner .bar {
+    align-self: center;
+    width: 1px;
+    height: 18px;
+    background: var(--gold-faint);
+}
+
+.corner button {
+    padding: 4px 0 3px;
+    border-bottom: 1px solid transparent;
+    color: inherit;
+    letter-spacing: inherit;
+    transition: color 400ms, border-color 400ms;
+}
+
+.corner button:hover { color: var(--gold); border-bottom-color: var(--gold-faint); }
+.corner button i { font-style: italic; color: rgba(212, 168, 83, 0.42); margin-right: 8px; }
+
+.bloom {
+    position: absolute;
+    left: 920px;
+    top: 0;
+    width: 2600px;
+    height: 2600px;
+    margin: -1300px 0 0 -1300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(244, 214, 140, 0) 40%, rgba(244, 214, 140, 0.12) 46%, rgba(250, 226, 166, 0.66) 48%, rgba(236, 196, 110, 0.18) 50.5%, rgba(212, 168, 83, 0.05) 56%, rgba(212, 168, 83, 0) 62%);
+    transform: scale(0.08);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 2200ms var(--slow), opacity 500ms var(--slow);
+}
+
+.edge {
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 120px rgba(244, 214, 140, 0.1), inset 0 0 28px rgba(250, 226, 166, 0.14), inset 0 0 0 1px rgba(244, 214, 140, 0.42);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1600ms var(--slow) 900ms;
+}
+
+.is-busy .field::before { animation: breathe 3200ms ease-in-out infinite; }
+.is-busy .message { color: rgba(212, 168, 83, 0.55); }
+.is-busy .field input { color: rgba(236, 228, 210, 0.5); }
+
+@keyframes breathe {
+    0%, 100% { opacity: 0.25; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.012); }
+}
+
+.is-error .swap .yes { opacity: 0; filter: blur(6px); }
+.is-error .swap .no { opacity: 1; filter: blur(0); }
+.is-error .field::before { opacity: 0; }
+.is-error .field::after { opacity: 1; }
+.is-error .message { color: rgba(220, 178, 168, 0.72); }
+.is-error .message::before { content: "— "; color: rgba(188, 98, 92, 0.5); font-style: normal; }
+.is-error .field input { caret-color: var(--ember-text); }
+
+.is-info .message { color: rgba(236, 228, 210, 0.78); }
+.is-info .message::before { content: "— "; color: var(--gold-faint); font-style: normal; }
+.is-info .field::before { opacity: 0.5; }
+
+.is-success .bloom { transform: scale(2); opacity: 1; }
+.is-success .edge { opacity: 1; }
+.is-success .wall { opacity: 0.22; filter: saturate(0.2) brightness(0.5) blur(6px); }
+.is-success .dissolve { opacity: 0; filter: blur(10px); transform: translateY(-6px); }
+.is-success .field::before { opacity: 1; }
+.is-success .notes { transform: translateY(-76px); }
+.is-success .message { color: var(--gold); font-family: "Fraunces Display", Georgia, serif; font-size: 34px; }
+
+</style>
+</head>
+<body>
+<div class="stage" data-stage>
+    <div class="wall"></div>
+    <div class="tint"></div>
+    <div class="grain"></div>
+    <div class="bloom"></div>
+    <div class="edge"></div>
+
+    <div class="content">
+        <div class="clock dissolve">
+            <span data-clock="time"></span><span class="rule"></span><span class="date" data-clock="long"></span>
+        </div>
+
+        <h1 class="greeting dissolve">
+            <span class="swap"><span class="yes">Welcome back.</span><span class="no">That’s not it.</span></span>
+            <em>Take your time.</em>
+        </h1>
+
+        <form data-login>
+            <div class="who dissolve"><i>as</i><span data-user-name></span></div>
+            <label class="field dissolve">
+                <input data-field="password" type="password" placeholder="Password" aria-label="Password" autocomplete="off">
+                <button type="button" data-action="reveal" title="Show password"><i data-icon="view-visible"></i></button>
+                <button type="submit" title="Log in"><i data-icon="go-next"></i></button>
+            </label>
+            <div class="notes">
+                <span class="message" data-message></span>
+                <span class="hint">Press Enter when you’re ready.</span>
+                <span class="capslock" data-capslock>Caps Lock is on</span>
+            </div>
+        </form>
+    </div>
+
+    <div class="corner dissolve">
+        <div class="group">
+            <button data-action="session"><i>session</i><span data-session-name></span></button>
+            <button data-action="switch-user"><i>user</i><span data-user-name></span></button>
+        </div>
+        <span class="bar"></span>
+        <div class="group">
+            <button data-power="suspend">sleep</button>
+            <button data-power="reboot">restart</button>
+            <button data-power="shutdown">power off</button>
+        </div>
+    </div>
+</div>
+<div class="demo-hint">password <b>lintel</b> · <b>Ctrl+Alt</b> + <b>↑↓</b> state · <b>←→</b> design · <b>W</b> wallpaper <span data-wallpaper-name></span> · <b>S</b> session · <b>U</b> user · <b>V</b> show password · <b>Z</b> sleep · <b>B</b> restart · <b>Q</b> power off · <a href="index.html">all</a></div>
+<script src="shared/icons.js"></script>
+<script src="shared/wallpapers.js"></script>
+<script src="shared/demo.js"></script>
+<script>
+function bloom_place() {
+    const bloom = stage.querySelector(".bloom");
+    const field = stage.querySelector(".field");
+    const scale = stage.getBoundingClientRect().width / STAGE_WIDTH;
+    const box = field.getBoundingClientRect();
+    const origin = stage.getBoundingClientRect();
+    bloom.style.left = `${(box.left + box.width / 2 - origin.left) / scale}px`;
+    bloom.style.top = `${(box.top + box.height / 2 - origin.top) / scale}px`;
+}
+
+document.fonts.ready.then(bloom_place);
+addEventListener("resize", bloom_place);
+bloom_place();
+</script>
+</body>
+</html>

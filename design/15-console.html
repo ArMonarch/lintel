@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · 15 Console</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+.stage {
+    --housing: #e9e8e3;
+    --housing-light: #f3f2ee;
+    --panel: #d9d8d2;
+    --text: #1c1c1c;
+    --muted: #6b6a64;
+    --hair: #1c1c1c;
+    --needle: #d23a2a;
+    --honey: #f0b323;
+    --lamp-error: #e8541e;
+    --lamp-ok: #5b9e3e;
+    --key-grey: #c4c2bb;
+    background: radial-gradient(ellipse 80% 70% at 50% 45%, #3b3a36 0%, #2a2926 60%, #1d1c1a 100%);
+    color: var(--text);
+    font-family: "Adwaita Sans", "Inter", "Helvetica Neue", Helvetica, sans-serif;
+    font-weight: 300;
+}
+
+.caps {
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.device {
+    position: absolute;
+    left: 160px;
+    top: 90px;
+    width: 1600px;
+    height: 900px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #efeee9 0%, var(--housing) 18%, var(--housing) 82%, #e1e0da 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.07),
+        inset 1px 0 0 rgba(255, 255, 255, 0.5),
+        inset -1px 0 0 rgba(0, 0, 0, 0.05),
+        0 2px 0 #b9b8b2,
+        0 4px 0 #a9a8a2,
+        0 50px 90px rgba(0, 0, 0, 0.55),
+        0 18px 30px rgba(0, 0, 0, 0.35);
+}
+
+.brand {
+    position: absolute;
+    left: 56px;
+    top: 26px;
+    font-size: 23px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+}
+
+.model {
+    position: absolute;
+    left: 140px;
+    top: 34px;
+}
+
+.date {
+    position: absolute;
+    right: 56px;
+    top: 34px;
+}
+
+.panel {
+    position: absolute;
+    left: 56px;
+    right: 56px;
+    top: 70px;
+    height: 180px;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #d3d2cc 0%, var(--panel) 14%, var(--panel) 100%);
+    box-shadow:
+        inset 0 2px 5px rgba(0, 0, 0, 0.16),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 1px 0 rgba(255, 255, 255, 0.8);
+    overflow: hidden;
+}
+
+.panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(172deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 38%);
+    pointer-events: none;
+}
+
+.scale {
+    position: absolute;
+    left: 52px;
+    right: 52px;
+    top: 0;
+    bottom: 0;
+}
+
+.baseline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 108px;
+    height: 1px;
+    background: var(--hair);
+    opacity: 0.55;
+}
+
+.ticks-hour,
+.ticks-quarter {
+    position: absolute;
+    left: -0.5px;
+    width: calc(100% + 1px);
+    opacity: 0.6;
+}
+
+.ticks-hour {
+    top: 80px;
+    height: 28px;
+    background: repeating-linear-gradient(90deg, var(--hair) 0 1px, transparent 1px calc(100% / 24 - 1px / 24));
+}
+
+.ticks-quarter {
+    top: 98px;
+    height: 10px;
+    background: repeating-linear-gradient(90deg, var(--hair) 0 1px, transparent 1px calc(100% / 96 - 1px / 96));
+    opacity: 0.38;
+}
+
+.numeral {
+    position: absolute;
+    top: 117px;
+    transform: translateX(-50%);
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    font-feature-settings: "tnum" 1;
+    color: var(--text);
+    opacity: 0.75;
+}
+
+.band {
+    position: absolute;
+    top: 146px;
+    height: 18px;
+    border-top: 1px solid rgba(28, 28, 28, 0.32);
+    text-align: center;
+    padding-top: 5px;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-weight: 400;
+    color: var(--muted);
+    transition: color 400ms;
+}
+
+.band::before,
+.band::after {
+    content: "";
+    position: absolute;
+    top: -5px;
+    width: 1px;
+    height: 5px;
+    background: rgba(28, 28, 28, 0.32);
+}
+
+.band::before { left: 0; }
+.band::after { right: 0; }
+.band.is-current { color: var(--text); border-top-color: var(--text); }
+
+.needle {
+    position: absolute;
+    top: 12px;
+    bottom: 36px;
+    left: var(--needle-at, 50%);
+    width: 2px;
+    margin-left: -1px;
+    background: var(--needle);
+    box-shadow: 2px 0 3px rgba(0, 0, 0, 0.14);
+    z-index: 1;
+    transition: left 600ms cubic-bezier(0.3, 0, 0.2, 1);
+}
+
+.needle-time {
+    position: absolute;
+    left: 16px;
+    top: 4px;
+    font-size: 44px;
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    font-feature-settings: "tnum" 1;
+    color: var(--text);
+    white-space: nowrap;
+    transition: opacity 250ms;
+}
+
+.needle.is-flip .needle-time { left: auto; right: 16px; }
+
+.message {
+    position: absolute;
+    left: 108px;
+    right: 108px;
+    top: 268px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 13px;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    font-weight: 400;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 250ms, transform 250ms;
+}
+
+.message::before {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    background: var(--text);
+}
+
+.speaker {
+    position: absolute;
+    left: 56px;
+    top: 320px;
+    width: 704px;
+    height: 495px;
+}
+
+.dots,
+.picture {
+    position: absolute;
+    inset: 0;
+}
+
+.dots {
+    background:
+        radial-gradient(circle at 50% 46%, #a3a19b 0 3.3px, transparent 3.8px) 0 0 / 11px 11px,
+        radial-gradient(circle at 50% 56%, rgba(255, 255, 255, 0.55) 0 3.4px, transparent 3.9px) 0 0 / 11px 11px;
+}
+
+.picture {
+    background: var(--wallpaper) center / cover no-repeat;
+    filter: grayscale(1) contrast(1.5) contrast(0.7) brightness(0.9);
+    -webkit-mask-image:
+        radial-gradient(circle at 50% 46%, #000 0 3.3px, transparent 3.8px),
+        radial-gradient(ellipse 78% 78% at 50% 50%, #000 45%, transparent 100%);
+    -webkit-mask-size: 11px 11px, 100% 100%;
+    -webkit-mask-repeat: repeat, no-repeat;
+    -webkit-mask-composite: source-in;
+    mask-image:
+        radial-gradient(circle at 50% 46%, #000 0 3.3px, transparent 3.8px),
+        radial-gradient(ellipse 78% 78% at 50% 50%, #000 45%, transparent 100%);
+    mask-size: 11px 11px, 100% 100%;
+    mask-repeat: repeat, no-repeat;
+    mask-composite: intersect;
+    transition: filter 700ms;
+}
+
+.is-success .picture { filter: grayscale(0.2) contrast(1.1) brightness(1); }
+
+form {
+    position: absolute;
+    left: 840px;
+    top: 320px;
+    width: 704px;
+    height: 496px;
+}
+
+.session-label { position: absolute; left: 0; top: 0; }
+
+.readout {
+    position: absolute;
+    left: 120px;
+    top: -3px;
+    padding: 2px 0;
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--text);
+    border-bottom: 1px solid transparent;
+}
+
+.readout:hover { border-bottom-color: var(--text); }
+
+.sessions {
+    position: absolute;
+    left: 54px;
+    width: 644px;
+    top: 36px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.key {
+    width: 88px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.socket {
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #dddcd6;
+    box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, 0.18),
+        0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.key .socket { width: 88px; height: 88px; }
+
+.push {
+    width: 74px;
+    height: 74px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 35%, #f8f7f4 0%, #ecebe6 55%, #dedcd6 100%);
+    box-shadow:
+        0 4px 5px rgba(0, 0, 0, 0.2),
+        0 1px 1px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    transition: transform 140ms, box-shadow 140ms, background 140ms;
+}
+
+.push:hover { background: radial-gradient(circle at 50% 35%, #fbfaf8 0%, #f0efea 55%, #e2e0da 100%); }
+
+.push.is-down {
+    transform: translateY(2px) scale(0.985);
+    background: radial-gradient(circle at 50% 60%, #e0dfd9 0%, #d5d4ce 100%);
+    box-shadow:
+        inset 0 3px 6px rgba(0, 0, 0, 0.24),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.5),
+        0 0 0 rgba(0, 0, 0, 0);
+}
+
+.key-label {
+    font-size: 12px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    font-weight: 400;
+    color: var(--muted);
+    transition: color 140ms;
+}
+
+.key.is-current .key-label { color: var(--text); font-weight: 500; }
+
+.user-label {
+    position: absolute;
+    left: 0;
+    top: 208px;
+}
+
+.dial {
+    position: absolute;
+    left: 0;
+    top: 230px;
+    width: 196px;
+    height: 196px;
+}
+
+.dial .socket {
+    position: absolute;
+    inset: 0;
+}
+
+.knob {
+    position: absolute;
+    left: 14px;
+    top: 14px;
+    width: 168px;
+    height: 168px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 50% 50%, transparent 0 62px, rgba(0, 0, 0, 0.05) 63px, transparent 64px),
+        repeating-conic-gradient(rgba(0, 0, 0, 0.07) 0 1deg, transparent 1deg 4deg),
+        radial-gradient(circle at 50% 30%, #fbfaf7 0%, #ecebe6 55%, #d9d8d2 100%);
+    box-shadow:
+        0 8px 12px rgba(0, 0, 0, 0.22),
+        0 2px 2px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    transform: rotate(var(--knob-angle, 0deg));
+    transition: transform 520ms cubic-bezier(0.4, 1.4, 0.5, 1);
+}
+
+.knob::before {
+    content: "";
+    position: absolute;
+    left: 24px;
+    top: 24px;
+    right: 24px;
+    bottom: 24px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 70%, #f4f3ef 0%, #e6e5e0 70%, #dcdbd5 100%);
+    box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.knob::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 30px;
+    width: 3px;
+    height: 34px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background: var(--text);
+}
+
+.knob:hover { filter: brightness(1.02); }
+
+.mark {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    margin: -3px 0 0 -3px;
+    border-radius: 50%;
+    background: #b2b0a9;
+    transition: background 300ms;
+}
+
+.mark.is-current { background: var(--text); }
+
+.user-name {
+    position: absolute;
+    left: -40px;
+    width: 276px;
+    top: 446px;
+    text-align: center;
+    font-size: 15px;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.password-label { position: absolute; left: 268px; top: 252px; }
+
+.status {
+    position: absolute;
+    left: 272px;
+    top: 396px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.status-text {
+    font-size: 12px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: #a83a10;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 200ms, transform 200ms;
+}
+
+.lamp {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #dad9d3 0%, #bdbbb4 100%);
+    box-shadow:
+        inset 0 1px 2px rgba(0, 0, 0, 0.3),
+        0 1px 0 rgba(255, 255, 255, 0.85),
+        0 0 0 3px #dcdbd5;
+    transition: background 200ms, box-shadow 200ms;
+}
+
+.aperture {
+    position: absolute;
+    left: 268px;
+    top: 280px;
+    width: 308px;
+    height: 96px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, #161615 0%, #232320 100%);
+    box-shadow:
+        inset 0 4px 10px rgba(0, 0, 0, 0.7),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+        0 0 0 1px rgba(0, 0, 0, 0.2),
+        0 0 0 8px #dcdbd5,
+        0 1px 0 8px rgba(255, 255, 255, 0.7),
+        0 -1px 0 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.aperture::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(170deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0) 45%);
+    pointer-events: none;
+}
+
+.aperture input {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0 64px 0 30px;
+    font-size: 30px;
+    letter-spacing: 10px;
+    color: #f1eee5;
+    caret-color: var(--honey);
+}
+
+.reveal {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    width: 28px;
+    height: 28px;
+    margin-top: -14px;
+    display: grid;
+    place-items: center;
+    color: rgba(241, 238, 229, 0.38);
+    transition: color 150ms;
+}
+
+.reveal:hover { color: rgba(241, 238, 229, 0.85); }
+
+.shutter {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background:
+        repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px 6px),
+        linear-gradient(180deg, #ecebe6, #dddcd6);
+    box-shadow: inset -2px 0 3px rgba(0, 0, 0, 0.18);
+    transform: translateX(-101%);
+    transition: transform 700ms cubic-bezier(0.6, 0, 0.2, 1);
+}
+
+.capslock {
+    position: absolute;
+    right: 128px;
+    top: 252px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.capslock::after {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--honey);
+}
+
+.enter-socket {
+    position: absolute;
+    left: 604px;
+    top: 278px;
+    width: 100px;
+    height: 100px;
+}
+
+.enter {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 32%, #f8c64a 0%, var(--honey) 55%, #e0a215 100%);
+    box-shadow:
+        0 5px 6px rgba(0, 0, 0, 0.22),
+        0 1px 1px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 240, 200, 0.9),
+        inset 0 -2px 4px rgba(150, 90, 0, 0.18);
+    transition: transform 140ms, box-shadow 140ms, filter 140ms;
+}
+
+.enter:hover { filter: brightness(1.04); }
+
+.enter:active,
+.is-busy .enter {
+    transform: translateY(2px) scale(0.985);
+    box-shadow:
+        inset 0 3px 7px rgba(110, 60, 0, 0.35),
+        inset 0 -1px 0 rgba(255, 240, 200, 0.5);
+}
+
+.enter-label {
+    position: absolute;
+    left: 604px;
+    width: 100px;
+    top: 396px;
+    line-height: 24px;
+    text-align: center;
+}
+
+.host {
+    position: absolute;
+    left: 56px;
+    bottom: 34px;
+}
+
+.power {
+    position: absolute;
+    right: 56px;
+    bottom: 24px;
+    display: flex;
+    gap: 40px;
+}
+
+.power button {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    font-weight: 400;
+    color: var(--muted);
+}
+
+.power button:hover { color: var(--text); }
+
+.power .pip {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 35%, #d2d0c9 0%, var(--key-grey) 60%, #b3b1aa 100%);
+    box-shadow:
+        0 2px 3px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+        0 0 0 4px #dddcd6,
+        0 1px 0 4px rgba(255, 255, 255, 0.8);
+    transition: transform 120ms, box-shadow 120ms;
+}
+
+.power button:active .pip {
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 0 4px #dddcd6;
+}
+
+.is-busy .needle {
+    animation: sweep 1800ms cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.is-busy .needle-time { opacity: 0; }
+.is-busy .message,
+.is-info .message,
+.is-error .message,
+.is-success .message { opacity: 1; transform: none; }
+.is-busy .message { color: var(--muted); }
+.is-busy .message::before { background: var(--needle); animation: blink 600ms steps(2, jump-none) infinite; }
+.is-info .message::before { background: var(--honey); }
+.is-error .message { color: #a83a10; }
+.is-error .message::before { background: var(--lamp-error); border-radius: 50%; }
+.is-success .message::before { background: var(--lamp-ok); border-radius: 50%; }
+
+.is-error .lamp {
+    background: radial-gradient(circle at 40% 35%, #ffb08a 0%, var(--lamp-error) 55%, #c63e0e 100%);
+    box-shadow:
+        0 0 10px 3px rgba(232, 84, 30, 0.55),
+        0 0 26px 8px rgba(232, 84, 30, 0.22),
+        0 0 0 3px #dcdbd5;
+}
+
+.is-error .status-text { opacity: 1; transform: none; }
+
+.is-busy .lamp,
+.is-info .lamp {
+    background: radial-gradient(circle at 40% 35%, #ffe08a 0%, var(--honey) 60%, #c98f10 100%);
+    box-shadow: 0 0 8px 2px rgba(240, 179, 35, 0.5), 0 0 0 3px #dcdbd5;
+}
+
+.is-busy .lamp { animation: blink 900ms ease-in-out infinite; }
+
+.is-success .lamp {
+    background: radial-gradient(circle at 40% 35%, #b9e59e 0%, var(--lamp-ok) 55%, #3f7a28 100%);
+    box-shadow:
+        0 0 10px 3px rgba(91, 158, 62, 0.5),
+        0 0 26px 8px rgba(91, 158, 62, 0.2),
+        0 0 0 3px #dcdbd5;
+}
+
+.is-success .shutter { transform: translateX(0); }
+
+@keyframes sweep {
+    0% { left: var(--needle-at); }
+    35% { left: 100%; }
+    80% { left: 0%; }
+    100% { left: var(--needle-at); }
+}
+
+@keyframes blink {
+    50% { opacity: 0.2; }
+}
+</style>
+</head>
+<body>
+<div class="stage" data-stage>
+    <div class="device">
+        <div class="brand">lintel</div>
+        <div class="model caps">Type 15 · greeter</div>
+        <div class="date caps" data-clock="long"></div>
+
+        <div class="panel">
+            <div class="scale">
+                <div class="ticks-hour"></div>
+                <div class="ticks-quarter"></div>
+                <div class="baseline"></div>
+                <div class="numerals"></div>
+                <div class="bands"></div>
+                <div class="needle"><span class="needle-time" data-clock="time"></span></div>
+            </div>
+        </div>
+
+        <div class="message" data-message></div>
+
+        <div class="speaker">
+            <div class="dots"></div>
+            <div class="picture"></div>
+        </div>
+
+        <form data-login>
+            <span class="session-label caps">Session</span>
+            <button type="button" class="readout" data-action="session" title="Next session"><span data-session-name></span></button>
+            <div class="sessions"></div>
+
+            <span class="user-label caps">User</span>
+            <div class="dial">
+                <span class="socket"></span>
+                <button type="button" class="knob" data-action="switch-user" title="Switch user"></button>
+            </div>
+            <span class="user-name" data-user-name></span>
+
+            <span class="password-label caps">Password</span>
+            <div class="status">
+                <span class="lamp"></span>
+                <span class="status-text">Wrong password</span>
+            </div>
+            <div class="aperture">
+                <input data-field="password" type="password" aria-label="Password" autocomplete="off">
+                <button type="button" class="reveal" data-action="reveal" title="Show password"><i data-icon="view-visible"></i></button>
+                <span class="shutter"></span>
+            </div>
+            <span class="capslock caps" data-capslock>Caps lock</span>
+
+            <div class="enter-socket socket">
+                <button type="submit" class="enter" title="Log in" aria-label="Log in"></button>
+            </div>
+            <span class="enter-label caps">Enter</span>
+        </form>
+
+        <div class="host caps">seiren · greetd</div>
+
+        <div class="power">
+            <button data-power="suspend" title="Sleep">Sleep<span class="pip"></span></button>
+            <button data-power="reboot" title="Restart">Restart<span class="pip"></span></button>
+            <button data-power="shutdown" title="Power off">Off<span class="pip"></span></button>
+        </div>
+    </div>
+</div>
+<div class="demo-hint">password <b>lintel</b> · <b>Ctrl+Alt</b> + <b>↑↓</b> state · <b>←→</b> design · <b>W</b> wallpaper <span data-wallpaper-name></span> · <b>S</b> session · <b>U</b> user · <b>V</b> show password · <b>Z</b> sleep · <b>B</b> restart · <b>Q</b> power off · <a href="index.html">all</a></div>
+<script src="shared/icons.js"></script>
+<script src="shared/wallpapers.js"></script>
+<script src="shared/demo.js"></script>
+<script>
+const SCALE_HOURS = 24;
+const SESSION_KEY_LIMIT = 5;
+const USER_MARK_LIMIT = 8;
+const KNOB_SWEEP_DEG = 100;
+const KNOB_MARK_RADIUS = 110;
+const NEEDLE_FLIP_PERCENT = 84;
+const BANDS = [
+    ["Night", 0, 5],
+    ["Morning", 5, 12],
+    ["Afternoon", 12, 18],
+    ["Evening", 18, 24],
+];
+
+const scale_numerals = document.querySelector(".numerals");
+const scale_bands = document.querySelector(".bands");
+const needle = document.querySelector(".needle");
+const session_keys = document.querySelector(".sessions");
+const dial = document.querySelector(".dial");
+const knob = document.querySelector(".knob");
+
+console.assert(SESSIONS.length <= SESSION_KEY_LIMIT, "too many sessions for the key row");
+console.assert(USERS.length <= USER_MARK_LIMIT, "too many users for the knob");
+
+for (let hour = 0; hour <= SCALE_HOURS; hour += 1) {
+    const numeral = document.createElement("span");
+    numeral.className = "numeral";
+    numeral.style.left = `${(hour / SCALE_HOURS) * 100}%`;
+    numeral.textContent = String(hour);
+    scale_numerals.append(numeral);
+}
+
+for (const [name, from, to] of BANDS) {
+    const band = document.createElement("span");
+    band.className = "band";
+    band.style.left = `calc(${(from / SCALE_HOURS) * 100}% + 6px)`;
+    band.style.width = `calc(${((to - from) / SCALE_HOURS) * 100}% - 12px)`;
+    band.dataset.from = String(from);
+    band.dataset.to = String(to);
+    band.textContent = name;
+    scale_bands.append(band);
+}
+
+for (let index = 0; index < SESSIONS.length; index += 1) {
+    const key = document.createElement("div");
+    key.className = "key";
+    key.innerHTML = `<span class="socket"><button type="button" class="push" data-session-index="${index}" title="${SESSIONS[index]}"></button></span><span class="key-label"></span>`;
+    key.querySelector(".key-label").textContent = SESSIONS[index].split(" ")[0];
+    session_keys.append(key);
+}
+
+function knob_angle(index) {
+    console.assert(index >= 0 && index < USERS.length, index);
+    if (USERS.length === 1) return 0;
+    return -KNOB_SWEEP_DEG / 2 + (index * KNOB_SWEEP_DEG) / (USERS.length - 1);
+}
+
+for (let index = 0; index < USERS.length; index += 1) {
+    const mark = document.createElement("span");
+    mark.className = "mark";
+    const angle = (knob_angle(index) - 90) * (Math.PI / 180);
+    const x = Math.cos(angle) * KNOB_MARK_RADIUS;
+    const y = Math.sin(angle) * KNOB_MARK_RADIUS;
+    mark.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+    dial.append(mark);
+}
+
+function console_sync() {
+    console.assert(session_index >= 0 && session_index < SESSIONS.length, session_index);
+    console.assert(user_index >= 0 && user_index < USERS.length, user_index);
+    const keys = session_keys.querySelectorAll(".key");
+    for (let index = 0; index < keys.length; index += 1) {
+        const current = index === session_index;
+        keys[index].classList.toggle("is-current", current);
+        keys[index].querySelector(".push").classList.toggle("is-down", current);
+    }
+    const marks = dial.querySelectorAll(".mark");
+    for (let index = 0; index < marks.length; index += 1) {
+        marks[index].classList.toggle("is-current", index === user_index);
+    }
+    knob.style.setProperty("--knob-angle", `${knob_angle(user_index)}deg`);
+}
+
+function needle_tick() {
+    const now = new Date();
+    const minutes = now.getHours() * 60 + now.getMinutes();
+    const percent = (minutes / (SCALE_HOURS * 60)) * 100;
+    console.assert(percent >= 0 && percent < 100, percent);
+    needle.style.setProperty("--needle-at", `${percent.toFixed(3)}%`);
+    needle.classList.toggle("is-flip", percent > NEEDLE_FLIP_PERCENT);
+    for (const band of scale_bands.children) {
+        const hour = now.getHours();
+        band.classList.toggle("is-current", hour >= Number(band.dataset.from) && hour < Number(band.dataset.to));
+    }
+}
+
+function on_session_key(event) {
+    const push = event.target.closest("[data-session-index]");
+    if (push === null) return;
+    const index = Number(push.dataset.sessionIndex);
+    console.assert(index >= 0 && index < SESSIONS.length, index);
+    session_index = (index + SESSIONS.length - 1) % SESSIONS.length;
+    session_next();
+    field_password.focus();
+}
+
+const console_observer = new MutationObserver(console_sync);
+for (const node of document.querySelectorAll("[data-session-name], [data-user-name]")) {
+    console_observer.observe(node, { childList: true, characterData: true, subtree: true });
+}
+
+document.addEventListener("click", on_session_key);
+console_sync();
+needle_tick();
+setInterval(needle_tick, 1000);
+</script>
+</body>
+</html>

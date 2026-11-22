@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · 52 Revival Breeze</title>
+<link rel="stylesheet" href="shared/base.css?v=20261123c">
+<style>
+/* TODO-UPDATE-COMMENT: copied from 01 Revival; the pills are now Breeze fields */
+/* --- */
+/* 01 Revival: the old SDDM layout, kept where it worked (left column over the
+   dark wall, huge clock, lilac pills) and tightened where it did not: one
+   form block, readable errors, Plasma power buttons instead of plain text. */
+
+.stage {
+    --breeze: #3daee9;
+    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --lift: 520ms;
+}
+
+.shade {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0) 40%),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.34) 0%, rgba(0, 0, 0, 0) 30%);
+    opacity: 1;
+    transition: opacity var(--lift) var(--ease);
+}
+
+.is-locked .shade { opacity: 0; }
+
+.lock {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 150px;
+    opacity: 0;
+    transform: translateX(240px);
+    pointer-events: none;
+    transition: opacity 360ms var(--ease), transform var(--lift) var(--ease);
+}
+
+.is-locked .lock {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.lock-time {
+    font-size: 200px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -7px;
+    color: var(--lilac);
+    text-shadow: 0 4px 28px rgba(0, 0, 0, 0.55);
+}
+
+.lock-date {
+    margin-top: 18px;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--lilac);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+}
+
+.lock-hint {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 64px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(228, 224, 255, 0.8);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+    animation: hint-breathe 3200ms ease-in-out infinite;
+}
+
+@keyframes hint-breathe {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+}
+
+.scrim,
+.column,
+.bottom {
+    transition: opacity 420ms var(--ease) 140ms, transform var(--lift) var(--ease) 80ms;
+}
+
+.is-locked .scrim {
+    opacity: 0;
+    transform: translateX(-160px);
+}
+
+.is-locked .column,
+.is-locked .bottom {
+    opacity: 0;
+    transform: translateX(-72px);
+    pointer-events: none;
+}
+
+.is-locked .scrim,
+.is-locked .column,
+.is-locked .bottom {
+    transition: opacity 220ms var(--ease), transform 300ms var(--ease);
+}
+
+.scrim {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1040px;
+    background: linear-gradient(90deg,
+        rgba(13, 7, 6, 0.62) 0,
+        rgba(13, 7, 6, 0.5) 400px,
+        rgba(13, 7, 6, 0.3) 680px,
+        rgba(13, 7, 6, 0.1) 900px,
+        rgba(13, 7, 6, 0) 100%);
+}
+
+.column {
+    position: absolute;
+    left: 192px;
+    top: 0;
+    bottom: 0;
+    width: 384px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.clock {
+    margin-top: 196px;
+    font-size: 176px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -6px;
+    color: var(--lilac);
+    text-shadow: 0 4px 28px rgba(0, 0, 0, 0.55);
+}
+
+.date {
+    margin-top: 18px;
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--lilac);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+}
+
+form {
+    width: 100%;
+    margin-top: 192px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.field {
+    width: 300px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px 0 12px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    transition: border-color 150ms, background 150ms, opacity 400ms;
+}
+
+.field:focus-within {
+    border-color: var(--breeze);
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.field input {
+    flex: 1;
+    min-width: 0;
+    font-size: 15px;
+}
+
+.field input::placeholder { color: rgba(255, 255, 255, 0.55); }
+
+.field .icon-button {
+    display: inline-flex;
+    color: rgba(255, 255, 255, 0.62);
+    transition: color 150ms;
+}
+
+.field .icon-button:hover { color: #fff; }
+
+.login {
+    position: relative;
+    overflow: hidden;
+    width: 300px;
+    margin-top: 12px;
+    height: 40px;
+    border-radius: 4px;
+    background: var(--lilac);
+    color: var(--lilac-ink);
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    transition: background 150ms, opacity 400ms;
+}
+
+.login:hover { background: #ffffff; }
+
+.login::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 50%;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0));
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.notes {
+    min-height: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 15px;
+    font-weight: 600;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+    transition: transform 400ms;
+}
+
+.message { color: var(--lilac); }
+.is-busy .message { color: rgba(228, 224, 255, 0.7); }
+.is-error .message { color: var(--danger); }
+.is-info .message { color: var(--jade); }
+.capslock { color: var(--gold); }
+
+.is-error form .password {
+    animation: shake 360ms ease-in-out;
+    border-color: var(--danger);
+}
+
+.is-busy .login { opacity: 0.75; }
+.is-busy .login::after { opacity: 1; animation: sweep 1100ms linear infinite; }
+
+@keyframes sweep {
+    to { transform: translateX(300%); }
+}
+
+.is-success .field, .is-success .login, .is-success .bottom { opacity: 0; }
+.is-success .notes { transform: translateY(-200px); }
+.is-success .message { color: var(--jade); font-size: 22px; font-weight: 700; }
+
+.bottom {
+    position: absolute;
+    left: 192px;
+    bottom: 48px;
+    width: 384px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+}
+
+.power {
+    display: flex;
+    gap: 28px;
+}
+
+.power button {
+    width: 76px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0 8px;
+    border-radius: 10px;
+    color: var(--lilac);
+    font-size: 13px;
+    font-weight: 600;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+    transition: background 150ms;
+}
+
+.power button:hover { background: rgba(228, 224, 255, 0.14); }
+.power i[data-icon] { width: 32px; height: 32px; }
+
+.session {
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(228, 224, 255, 0.85);
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+    transition: background 150ms, color 150ms;
+}
+
+.session:hover { color: #fff; background: rgba(228, 224, 255, 0.14); }
+</style>
+</head>
+<body>
+<div class="stage is-locked" data-stage>
+    <div class="shade"></div>
+    <div class="scrim"></div>
+
+    <div class="lock" data-lock>
+        <div class="lock-time tabular" data-clock="time"></div>
+        <div class="lock-date" data-clock="weekday-day"></div>
+        <div class="lock-hint">Press any key or click to sign in</div>
+    </div>
+
+    <div class="column">
+        <div class="clock tabular" data-clock="time"></div>
+        <div class="date" data-clock="weekday-day"></div>
+
+        <form data-login>
+            <label class="field">
+                <input data-field="username" value="frenzfries" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off">
+                <button type="button" class="icon-button" data-action="switch-user" title="Switch user">
+                    <i data-icon="system-switch-user"></i>
+                </button>
+            </label>
+            <label class="field password">
+                <input data-field="password" data-masked type="text" placeholder="Password" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off">
+                <button type="button" class="icon-button" data-action="reveal" title="Show password">
+                    <i data-icon="view-visible"></i>
+                </button>
+            </label>
+            <button class="login" type="submit">Login</button>
+            <div class="notes">
+                <span class="message" data-message></span>
+                <span class="capslock" data-capslock>Caps Lock is on</span>
+            </div>
+        </form>
+    </div>
+
+    <div class="bottom">
+        <div class="power">
+            <button data-power="suspend"><i data-icon="system-suspend"></i>Sleep</button>
+            <button data-power="reboot"><i data-icon="system-reboot"></i>Restart</button>
+            <button data-power="shutdown"><i data-icon="system-shutdown"></i>Shut Down</button>
+        </div>
+        <button class="session" data-action="session">Session (<span data-session-name></span>)</button>
+    </div>
+</div>
+<div class="demo-hint">password <b>lintel</b> · any key / click unlocks · <b>Esc</b> lock · <b>Ctrl+Alt</b> + <b>↑↓</b> state · <b>←→</b> design · <b>W</b> wallpaper <span data-wallpaper-name></span> · <b>S</b> session · <b>U</b> user · <b>V</b> show password · <b>Z</b> sleep · <b>B</b> restart · <b>Q</b> power off · <a href="index.html">all</a></div>
+<script src="shared/icons.js?v=20261123c"></script>
+<script src="shared/wallpapers.js?v=20261123c"></script>
+<script src="shared/demo.js?v=20261123c"></script>
+<script src="shared/curtain.js?v=20261123c"></script>
+</body>
+</html>

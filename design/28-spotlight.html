@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · 28 Spotlight</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+.stage {
+    --surface: rgba(24, 24, 27, 0.9);
+    --line: rgba(255, 255, 255, 0.11);
+    --line-strong: rgba(255, 255, 255, 0.2);
+    --hover: rgba(255, 255, 255, 0.07);
+    --text: #fafafa;
+    --muted: #a1a1aa;
+    --dim: #7e7e89;
+    --accent: #a5b4fc;
+    --error: #f87171;
+    --error-soft: #fca5a5;
+    --info: #fcd34d;
+    --success: #4ade80;
+    color: var(--text);
+    font-family: "Adwaita Sans", "Inter", sans-serif;
+    font-feature-settings: "cv11" 1, "ss01" 1;
+}
+
+.stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 1500px 1100px at 50% 52%, rgba(9, 9, 11, 0.26), rgba(9, 9, 11, 0) 75%),
+        linear-gradient(180deg, rgba(9, 9, 11, 0.1), rgba(9, 9, 11, 0.32));
+    pointer-events: none;
+    transition: opacity 900ms;
+}
+
+.palette {
+    position: absolute;
+    left: 600px;
+    top: 356px;
+    width: 720px;
+}
+
+.pill,
+.sheet {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(28px) saturate(150%);
+    box-shadow:
+        0 32px 80px -12px rgba(0, 0, 0, 0.6),
+        0 8px 24px rgba(0, 0, 0, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.pill {
+    position: relative;
+    left: 0;
+    width: 720px;
+    height: 64px;
+    border-radius: 32px;
+    transition: border-color 200ms, box-shadow 300ms;
+}
+
+.pill:focus-within { border-color: var(--line-strong); }
+
+.pill::before,
+.glow > span {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    padding: 2px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(165, 180, 252, 0), var(--accent) 36%, #ffffff 50%, var(--accent) 64%, rgba(165, 180, 252, 0)) -70% 0 / 40% 100% no-repeat;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+.pill::before { opacity: 0; transition: opacity 200ms; }
+
+.glow {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    filter: blur(9px);
+    opacity: 0;
+    transition: opacity 200ms;
+    pointer-events: none;
+}
+
+.glow > span { inset: -4px; padding: 8px; }
+
+.ask,
+.pick,
+.done {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+}
+
+.ask { gap: 14px; padding: 0 14px 0 12px; transition: opacity 160ms; }
+.pick { gap: 14px; padding: 0 16px 0 28px; }
+.pick, .is-pick .ask { display: none; }
+.is-pick .pick { display: flex; }
+
+.chip {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px 0 4px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    transition: background 120ms;
+}
+
+.chip:hover { background: rgba(255, 255, 255, 0.13); }
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: linear-gradient(140deg, #a5b4fc, #7c6cf0 60%, #5b4bc4);
+    color: #1e1b3a;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.ask input,
+.pick input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    font-size: 21px;
+    letter-spacing: -0.01em;
+    caret-color: var(--accent);
+}
+
+.ask input[type="password"] { letter-spacing: 4px; font-size: 20px; }
+.ask input::placeholder,
+.pick input::placeholder { color: var(--dim); opacity: 1; letter-spacing: -0.01em; }
+
+.caps {
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 9px;
+    border-radius: 6px;
+    background: rgba(252, 211, 77, 0.14);
+    color: var(--info);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.reveal {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    color: var(--muted);
+    transition: color 120ms, background 120ms;
+}
+
+.reveal:hover { color: var(--text); background: var(--hover); }
+.reveal i[data-icon] { width: 20px; height: 20px; }
+
+kbd {
+    min-width: 24px;
+    height: 24px;
+    display: inline-grid;
+    place-items: center;
+    padding: 0 7px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07), 0 1px 0 rgba(0, 0, 0, 0.4);
+    color: var(--muted);
+    font: 500 12px/1 "Adwaita Sans", sans-serif;
+    letter-spacing: 0.01em;
+}
+
+.pill > div > kbd { height: 30px; min-width: 34px; border-radius: 8px; font-size: 13px; }
+
+.done {
+    justify-content: center;
+    gap: 14px;
+    font-size: 19px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.done::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 12px rgba(74, 222, 128, 0.8);
+}
+
+.done::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    height: 2px;
+    width: 0;
+    background: linear-gradient(90deg, rgba(74, 222, 128, 0), var(--success) 40%, #d9ffe6);
+}
+
+.sheet {
+    margin-top: 10px;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: opacity 260ms, transform 260ms;
+}
+
+.note {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.note-row {
+    margin: 8px 8px 0;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 16px;
+    border-radius: 12px;
+}
+
+.note-mark { width: 8px; height: 8px; flex: none; border-radius: 50%; }
+.note-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.note-title { display: none; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.message { font-size: 16px; color: var(--text); }
+
+.is-busy .note,
+.is-error .note,
+.is-info .note { max-height: 120px; }
+
+.is-busy .note-row { background: rgba(255, 255, 255, 0.04); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05); }
+
+.is-busy .note-mark {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(165, 180, 252, 0.25);
+    border-top-color: var(--accent);
+    animation: spin 800ms linear infinite;
+}
+
+.is-busy .message { color: var(--muted); }
+
+.is-error .note-row { background: rgba(248, 113, 113, 0.11); box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.18); }
+.is-error .note-mark { background: var(--error); box-shadow: 0 0 10px rgba(248, 113, 113, 0.7); }
+.is-error .note-title { display: block; color: var(--error-soft); }
+.is-error .message { font-size: 14px; color: #b9b9c2; }
+
+.is-info .note-row { background: rgba(252, 211, 77, 0.08); box-shadow: inset 0 0 0 1px rgba(252, 211, 77, 0.14); }
+.is-info .note-mark { background: var(--info); animation: pulse 1600ms ease-in-out infinite; }
+.is-info .message { color: #fde68a; font-weight: 500; }
+
+.list { padding: 6px 8px 8px; transition: opacity 200ms; }
+.list-pick, .is-pick .list-ask { display: none; }
+.is-pick .list-pick { display: block; }
+
+.group {
+    height: 32px;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 16px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--dim);
+}
+
+.row {
+    width: 100%;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 12px 0 16px;
+    border-radius: 12px;
+    font-size: 16px;
+    text-align: left;
+    color: var(--text);
+    transition: background 100ms;
+}
+
+.row:hover,
+.row.is-sel { background: var(--hover); }
+.row.is-sel { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05); }
+
+.row-label { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; white-space: nowrap; }
+.row-label .sep { color: var(--dim); margin: 0 -4px; }
+.row-label b { font-weight: 600; color: var(--accent); }
+.row .avatar { width: 26px; height: 26px; font-size: 12px; }
+.row .avatar.plain { background: rgba(255, 255, 255, 0.09); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1); color: var(--muted); font-weight: 600; }
+.row mark { background: none; color: var(--accent); font-weight: 700; }
+
+.keys { display: flex; align-items: center; gap: 4px; }
+.keys .plus { color: var(--dim); font-size: 11px; }
+
+.tag {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--dim);
+    margin-right: 8px;
+}
+
+.row.danger:hover .row-label,
+.row.danger.is-sel .row-label { color: var(--error-soft); }
+
+.foot {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 0 20px 0 24px;
+    border-top: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.02);
+    font-size: 13px;
+    color: var(--dim);
+}
+
+.host { margin-right: auto; display: flex; align-items: center; gap: 8px; }
+.host b { color: var(--muted); font-weight: 600; }
+.host::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--success); opacity: 0.8; }
+.foot .hint { display: flex; align-items: center; gap: 8px; }
+.foot .hint span { color: var(--muted); }
+.foot kbd { height: 22px; min-width: 22px; font-size: 11px; }
+.foot .hint-pick, .is-pick .foot .hint-ask { display: none; }
+.is-pick .foot .hint-pick { display: flex; }
+
+.clock {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 40px;
+    display: flex;
+    justify-content: center;
+    transition: opacity 400ms;
+}
+
+.clock-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: rgba(24, 24, 27, 0.55);
+    backdrop-filter: blur(16px);
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.01em;
+}
+
+.clock-pill .time { color: var(--text); font-weight: 600; font-feature-settings: "tnum" 1; }
+.clock-pill .sep { color: var(--dim); }
+
+.is-busy .pill { box-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.6), 0 0 40px rgba(165, 180, 252, 0.24); }
+.is-busy .pill::before,
+.is-busy .glow { opacity: 1; }
+.is-busy .pill::before,
+.is-busy .glow > span { animation: sweep 1400ms cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.is-busy .ask input { color: var(--muted); }
+.is-busy .list { opacity: 0.38; pointer-events: none; }
+.is-busy .chip { pointer-events: none; }
+
+.is-error .pill {
+    border-color: rgba(248, 113, 113, 0.8);
+    box-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.6), 0 0 0 5px rgba(248, 113, 113, 0.16), 0 0 40px rgba(248, 113, 113, 0.18);
+    animation: shake 380ms ease-in-out;
+}
+
+.is-error .ask input { caret-color: var(--error); }
+
+.is-info .pill { border-color: rgba(252, 211, 77, 0.3); }
+
+.is-success .pill { animation: stretch 1700ms cubic-bezier(0.7, 0, 0.2, 1) forwards; }
+.is-success .pill::before,
+.is-success .glow { opacity: 0; }
+.is-success .ask { opacity: 0; }
+.is-success .done { opacity: 1; transition: opacity 300ms 260ms; }
+.is-success .done::after { animation: load 1300ms 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.is-success .sheet { opacity: 0; transform: translateY(-14px) scale(0.98); pointer-events: none; }
+.is-success .clock { opacity: 0; }
+.is-success::before { opacity: 0; }
+
+@keyframes stretch {
+    0% { left: 0; width: 720px; border-radius: 32px; opacity: 1; }
+    42% { left: -601px; width: 1922px; border-radius: 0; opacity: 1; border-color: rgba(255, 255, 255, 0); }
+    78% { left: -601px; width: 1922px; border-radius: 0; opacity: 1; border-color: rgba(255, 255, 255, 0); }
+    100% { left: -601px; width: 1922px; border-radius: 0; opacity: 0; border-color: rgba(255, 255, 255, 0); }
+}
+
+@keyframes load { to { width: 100%; } }
+@keyframes sweep {
+    from { background-position: -70% 0; }
+    to { background-position: 170% 0; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(252, 211, 77, 0.15); opacity: 0.7; } }
+</style>
+</head>
+<body>
+<div class="stage" data-stage>
+    <div class="palette" data-palette>
+        <form class="pill" data-login>
+            <div class="ask">
+                <button type="button" class="chip" data-action="switch-user" title="Switch user">
+                    <span class="avatar" data-user-initial></span><span data-user-name></span>
+                </button>
+                <input data-field="password" type="password" placeholder="Password" autocomplete="off" spellcheck="false" aria-label="Password">
+                <span class="caps" data-capslock>Caps Lock</span>
+                <button type="button" class="reveal" data-action="reveal" title="Show password"><i data-icon="view-visible"></i></button>
+                <kbd>↵</kbd>
+            </div>
+            <div class="pick">
+                <input class="query" data-query placeholder="Sign in as…" autocomplete="off" spellcheck="false" aria-label="Sign in as">
+                <kbd>Esc</kbd>
+            </div>
+            <div class="done" data-done></div>
+            <span class="glow"><span></span></span>
+        </form>
+
+        <div class="sheet">
+            <div class="note">
+                <div class="note-row">
+                    <span class="note-mark"></span>
+                    <div class="note-body">
+                        <span class="note-title">Incorrect password · try again</span>
+                        <span class="message" data-message></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list list-ask" data-ask>
+                <div class="group">Sign-in</div>
+                <button type="button" class="row" data-action="session">
+                    <span class="row-label">Session <span class="sep">·</span> <b data-session-name></b></span>
+                    <span class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>S</kbd></span>
+                </button>
+                <button type="button" class="row" data-action="switch-user">
+                    <span class="row-label">Switch user</span>
+                    <span class="keys"><kbd>Esc</kbd></span>
+                </button>
+                <div class="group">Power</div>
+                <button type="button" class="row" data-power="suspend">
+                    <span class="row-label">Suspend</span>
+                    <span class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>Z</kbd></span>
+                </button>
+                <button type="button" class="row" data-power="reboot">
+                    <span class="row-label">Restart</span>
+                    <span class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>B</kbd></span>
+                </button>
+                <button type="button" class="row danger" data-power="shutdown">
+                    <span class="row-label">Power off</span>
+                    <span class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>Q</kbd></span>
+                </button>
+            </div>
+
+            <div class="list list-pick" data-pick></div>
+
+            <div class="foot">
+                <span class="host"><span>lintel on <b>seiren</b></span></span>
+                <span class="hint hint-ask"><span>Sign in</span><kbd>↵</kbd></span>
+                <span class="hint hint-ask"><span>Select</span><kbd>↑</kbd><kbd>↓</kbd></span>
+                <span class="hint hint-pick"><span>Pick</span><kbd>1–9</kbd></span>
+                <span class="hint hint-pick"><span>Continue</span><kbd>↵</kbd></span>
+                <span class="hint hint-pick"><span>Back</span><kbd>Esc</kbd></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="clock">
+        <div class="clock-pill"><span class="time" data-clock="time"></span><span class="sep">·</span><span data-clock="long"></span></div>
+    </div>
+</div>
+<div class="demo-hint">password <b>lintel</b> · <b>Ctrl+Alt</b> + <b>↑↓</b> state · <b>←→</b> design · <b>W</b> wallpaper <span data-wallpaper-name></span> · <b>S</b> session · <b>U</b> user · <b>V</b> show password · <b>Z</b> sleep · <b>B</b> restart · <b>Q</b> power off · <a href="index.html">all</a></div>
+<script src="shared/icons.js"></script>
+<script src="shared/wallpapers.js"></script>
+<script src="shared/demo.js"></script>
+<script>
+const PICK_ROWS_MAX = 9;
+const palette = document.querySelector("[data-palette]");
+const query = document.querySelector("[data-query]");
+const pick_list = document.querySelector("[data-pick]");
+const ask_rows = [...document.querySelectorAll("[data-ask] .row")];
+const done = document.querySelector("[data-done]");
+let pick_items = [];
+let pick_sel = 0;
+let ask_sel = -1;
+
+function fuzzy_match(text, needle) {
+    const hits = [];
+    const lower = text.toLowerCase();
+    let at = 0;
+    for (const glyph of needle.toLowerCase()) {
+        const found = lower.indexOf(glyph, at);
+        if (found === -1) return null;
+        hits.push(found);
+        at = found + 1;
+    }
+    return hits;
+}
+
+function html_escape(text) {
+    return text.replace(/[&<>"]/g, (glyph) => `&#${glyph.charCodeAt(0)};`);
+}
+
+function label_marked(text, hits) {
+    return [...text].map((glyph, index) => hits.includes(index) ? `<mark>${html_escape(glyph)}</mark>` : html_escape(glyph)).join("");
+}
+
+function pick_render() {
+    const needle = query.value.trim();
+    const all = [
+        ...USERS.map((name, index) => ({ kind: "user", index, name })),
+        ...SESSIONS.map((name, index) => ({ kind: "session", index, name })),
+    ];
+    console.assert(all.length <= PICK_ROWS_MAX, all.length);
+    pick_items = [];
+    let html = "";
+    let group = "";
+    for (const item of all) {
+        const hits = fuzzy_match(item.name, needle);
+        if (hits === null) continue;
+        pick_items.push(item);
+        const digit = pick_items.length;
+        if (item.kind !== group) {
+            group = item.kind;
+            html += `<div class="group">${group === "user" ? "Users" : "Sessions"}</div>`;
+        }
+        const current = item.kind === "user" ? item.index === user_index : item.index === session_index;
+        const avatar = `<span class="avatar${item.kind === "user" ? "" : " plain"}">${html_escape(item.name[0].toUpperCase())}</span>`;
+        html += `<button type="button" class="row" data-pick-row="${digit - 1}">`
+            + `<span class="row-label">${avatar}<span>${label_marked(item.name, hits)}</span></span>`
+            + (current ? `<span class="tag">current</span>` : "")
+            + `<span class="keys"><kbd>${digit}</kbd></span></button>`;
+    }
+    if (pick_items.length === 0) html = `<div class="group">No match for “${html_escape(needle)}”</div>`;
+    pick_list.innerHTML = html;
+    pick_sel = Math.min(Math.max(pick_sel, 0), Math.max(pick_items.length - 1, 0));
+    pick_mark();
+}
+
+function pick_mark() {
+    for (const row of pick_list.querySelectorAll("[data-pick-row]")) {
+        row.classList.toggle("is-sel", Number(row.dataset.pickRow) === pick_sel);
+    }
+}
+
+function pick_open() {
+    if (stage.classList.contains("is-busy") || stage.classList.contains("is-success")) return;
+    palette.classList.add("is-pick");
+    query.value = "";
+    pick_sel = user_index;
+    pick_render();
+    query.focus();
+}
+
+function pick_close() {
+    palette.classList.remove("is-pick");
+    field_password.focus();
+}
+
+function pick_commit(position) {
+    const item = pick_items[position];
+    if (item === undefined) return;
+    pick_close();
+    if (item.kind === "user") {
+        console.assert(item.index < USERS.length, item.index);
+        while (user_index !== item.index) user_next();
+    } else {
+        console.assert(item.index < SESSIONS.length, item.index);
+        while (session_index !== item.index) session_next();
+    }
+    field_password.focus();
+}
+
+function ask_mark() {
+    ask_rows.forEach((row, index) => row.classList.toggle("is-sel", index === ask_sel));
+}
+
+query.addEventListener("input", () => {
+    pick_sel = 0;
+    pick_render();
+});
+
+query.addEventListener("keydown", (event) => {
+    if (event.ctrlKey || event.altKey || event.metaKey) return;
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        if (pick_items.length === 0) return;
+        const step = event.key === "ArrowDown" ? 1 : -1;
+        pick_sel = (pick_sel + step + pick_items.length) % pick_items.length;
+        pick_mark();
+    } else if (event.key === "Enter") {
+        event.preventDefault();
+        pick_commit(pick_sel);
+    } else if (event.key === "Escape") {
+        event.preventDefault();
+        pick_close();
+    } else if (/^[1-9]$/.test(event.key)) {
+        event.preventDefault();
+        pick_commit(Number(event.key) - 1);
+    }
+});
+
+field_password.addEventListener("keydown", (event) => {
+    if (event.ctrlKey || event.altKey || event.metaKey) return;
+    if (event.key === "Escape") {
+        event.preventDefault();
+        pick_open();
+    } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        const step = event.key === "ArrowDown" ? 1 : -1;
+        const slots = ask_rows.length + 1;
+        ask_sel = ((ask_sel + 1 + step + slots) % slots) - 1;
+        ask_mark();
+    } else if (event.key === "Enter" && ask_sel !== -1) {
+        event.preventDefault();
+        ask_rows[ask_sel].click();
+    }
+});
+
+field_password.addEventListener("input", () => {
+    ask_sel = -1;
+    ask_mark();
+});
+
+pick_list.addEventListener("click", (event) => {
+    const row = event.target.closest("[data-pick-row]");
+    if (row === null) return;
+    pick_commit(Number(row.dataset.pickRow));
+});
+
+document.addEventListener("click", (event) => {
+    if (event.target.closest('[data-action="switch-user"]') !== null) {
+        event.stopPropagation();
+        pick_open();
+        return;
+    }
+}, true);
+
+document.addEventListener("click", (event) => {
+    if (palette.classList.contains("is-pick") && event.target.closest('[data-action="session"]') !== null) pick_render();
+});
+
+new MutationObserver(() => {
+    done.textContent = message.textContent;
+    if (!stage.classList.contains("is-idle") && palette.classList.contains("is-pick")) pick_close();
+}).observe(stage, { attributes: true, attributeFilter: ["class"] });
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+/* Shared by every design. Stick to properties GTK4 CSS also has, so a
+   chosen design ports straight to style.css: no backdrop-filter, no
+   clip-path, no mix-blend-mode. Layout (flex/absolute) maps to GtkBox,
+   GtkOverlay and GtkCenterBox, so it is free to use. */
+
+:root {
+    --ink: #0d0706;
+    --lacquer: #c8402c;
+    --lacquer-deep: #8e2a1f;
+    --gold: #e6b35c;
+    --jade: #3fae9a;
+    --parchment: #f2e8d8;
+    --lilac: #e4e0ff;
+    --lilac-ink: #2a2140;
+    --danger: #ff7a6b;
+    --font-sans: "Adwaita Sans", "Inter", "Noto Sans CJK JP", sans-serif;
+    --font-serif-cjk: "Noto Serif CJK JP", serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+}
+
+/* Fixed 1920x1080 canvas, scaled to fit by demo.js, so every design is
+   compared at the size the greeter will actually draw. */
+.stage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    transform-origin: 0 0;
+    font-family: var(--font-sans);
+    color: var(--parchment);
+    background: var(--ink) var(--wallpaper, url("../assets/wallpapers/qi.jpg")) center / cover no-repeat;
+    -webkit-font-smoothing: antialiased;
+}
+
+i[data-icon] {
+    display: inline-flex;
+    width: 22px;
+    height: 22px;
+    flex: none;
+}
+
+i[data-icon] svg { width: 100%; height: 100%; }
+
+input, button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    outline: none;
+}
+
+button { cursor: pointer; }
+
+input::placeholder { color: currentColor; opacity: 0.45; }
+
+input[data-masked]:not(:placeholder-shown):not(.is-revealed) { -webkit-text-security: disc; }
+
+[hidden] { display: none !important; }
+
+.tabular { font-feature-settings: "tnum" 1; }
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-10px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(3px); }
+}
+
+/* Demo-only chrome, outside the stage; not part of any design. */
+.demo-hint {
+    position: fixed;
+    right: 12px;
+    bottom: 10px;
+    z-index: 10;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font: 12px/1.4 var(--font-sans);
+    color: #ddd;
+    background: rgba(0, 0, 0, 0.55);
+    opacity: 0.35;
+    transition: opacity 150ms;
+}
+
+.demo-hint:hover { opacity: 1; }
+.demo-hint b { color: #fff; }
+.demo-hint a { color: #9cd; }

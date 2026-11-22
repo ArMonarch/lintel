@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · 22 Mascot</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+@font-face {
+    font-family: "Quicksand";
+    src: url("assets/fonts/Quicksand-Variable.ttf") format("truetype");
+    font-weight: 300 700;
+}
+
+.stage {
+    --cream: #f3eee6;
+    --halo: #ebe3d6;
+    --sand: #e4dbcc;
+    --stone: #d3c6b1;
+    --stone-top: #e0d5c3;
+    --stone-ink: #9c8b70;
+    --blue: #3d5a80;
+    --blue-deep: #2c4566;
+    --navy: #22324a;
+    --muted: #7b7264;
+    --apricot: #e99a55;
+    --gold: #d9a441;
+    --white: #fffdf9;
+    --red: #c2453a;
+    --red-soft: #fbe4df;
+    --amber: #a8731c;
+    --amber-soft: #fbf0d6;
+    --green: #3f7d4c;
+    --green-soft: #e2efdf;
+    background: var(--cream);
+    color: var(--navy);
+    font-family: "Quicksand", var(--font-sans);
+    font-weight: 500;
+}
+
+.scene { position: absolute; inset: 0; }
+.is-success .scene { animation: scene-out 800ms ease-in 1500ms forwards; }
+
+@keyframes scene-out {
+    to { opacity: 0; transform: translateY(-12px); }
+}
+
+.halo {
+    position: absolute;
+    left: 200px;
+    top: 210px;
+    width: 680px;
+    height: 680px;
+    border-radius: 50%;
+    background: var(--halo);
+}
+
+.speck {
+    position: absolute;
+    border-radius: 50%;
+}
+
+.speck.a { left: 222px; top: 330px; width: 22px; height: 22px; background: #e8c27a; }
+.speck.b { left: 912px; top: 212px; width: 14px; height: 14px; background: #a9bdd6; }
+.speck.c { left: 868px; top: 700px; width: 30px; height: 30px; border: 3px solid #c9d4e2; }
+
+.shadow {
+    position: absolute;
+    left: 330px;
+    top: 794px;
+    width: 420px;
+    height: 30px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(61, 90, 128, 0.2), rgba(61, 90, 128, 0));
+}
+
+.owl {
+    position: absolute;
+    left: 300px;
+    top: 246px;
+    width: 480px;
+    height: 580px;
+    overflow: visible;
+}
+
+.owl * { transform-box: view-box; }
+
+.move { transform-origin: 250px 522px; transition: transform 400ms ease-out; }
+.breathe { transform-origin: 250px 524px; animation: breathe 4.6s ease-in-out infinite; }
+
+@keyframes breathe {
+    0%, 100% { transform: scale(1, 1); }
+    50% { transform: scale(1.012, 1.028); }
+}
+
+.wing { transition: transform 520ms cubic-bezier(0.34, 1.45, 0.5, 1); }
+.wing-l { transform: translate(98px, 304px) rotate(14deg); }
+.wing-r { transform: translate(402px, 304px) rotate(-14deg); }
+
+.face { transition: transform 420ms cubic-bezier(0.3, 1.3, 0.5, 1); }
+.tufts { transition: transform 420ms cubic-bezier(0.3, 1.3, 0.5, 1); }
+.tilt { transform-origin: 250px 300px; transition: transform 260ms ease-out; }
+
+.look { animation: look 11s ease-in-out infinite; }
+
+@keyframes look {
+    0%, 30%, 100% { transform: translate(0, 0); }
+    36%, 52% { transform: translate(-10px, 3px); }
+    58%, 66% { transform: translate(0, 0); }
+    72%, 86% { transform: translate(9px, -4px); }
+}
+
+.gaze { transition: transform 160ms ease-out; }
+
+.eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: blink 5.4s infinite;
+    transition: opacity 200ms;
+}
+
+.eye.r { animation-delay: 30ms; }
+
+@keyframes blink {
+    0%, 92%, 97%, 100% { transform: scaleY(1); }
+    94.5% { transform: scaleY(0.08); }
+}
+
+.joy { opacity: 0; transition: opacity 200ms; }
+
+.brow {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: opacity 200ms, transform 300ms;
+}
+
+.drop { opacity: 0; transition: opacity 200ms; }
+
+.owl.m-watch .look { animation: none; }
+.owl.m-watch .tufts { transform: translateX(3px); }
+
+.owl.m-cover .wing-l,
+.is-busy .wing-l { transform: translate(150px, 356px) rotate(-154deg); }
+.owl.m-cover .wing-r,
+.is-busy .wing-r { transform: translate(350px, 356px) rotate(154deg); }
+.owl.m-cover .look,
+.is-busy .look { animation: none; }
+
+.is-busy .gaze,
+.is-info .gaze,
+.is-success .gaze { transform: none !important; }
+
+.is-busy .move { animation: bob 1.1s ease-in-out infinite; }
+
+@keyframes bob {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    25% { transform: translateY(-9px) rotate(-1.5deg); }
+    50% { transform: translateY(0) rotate(0); }
+    75% { transform: translateY(-9px) rotate(1.5deg); }
+}
+
+.is-error .face { animation: head-no 720ms ease-in-out; }
+.is-error .tufts { animation: tufts-no 720ms ease-in-out; }
+.is-error .move { animation: body-no 720ms ease-in-out; }
+.is-error .brow { opacity: 1; }
+.is-error .brow.l { transform: rotate(-16deg); }
+.is-error .brow.r { transform: rotate(16deg); }
+.is-error .drop { opacity: 1; }
+.is-error .look { animation: none; transform: translate(0, 8px); }
+
+@keyframes head-no {
+    0%, 100% { transform: translateX(0); }
+    16% { transform: translateX(-26px); }
+    38% { transform: translateX(22px); }
+    58% { transform: translateX(-16px); }
+    78% { transform: translateX(8px); }
+}
+
+@keyframes tufts-no {
+    0%, 100% { transform: translateX(0); }
+    16% { transform: translateX(-9px); }
+    38% { transform: translateX(8px); }
+    58% { transform: translateX(-5px); }
+    78% { transform: translateX(3px); }
+}
+
+@keyframes body-no {
+    0%, 100% { transform: rotate(0); }
+    16% { transform: rotate(-2.5deg); }
+    38% { transform: rotate(2deg); }
+    58% { transform: rotate(-1.2deg); }
+    78% { transform: rotate(0.6deg); }
+}
+
+.is-info .face { transform: translateX(-24px); }
+.is-info .tufts { transform: translateX(-8px); }
+.is-info .look { animation: none; transform: translate(-14px, 6px); }
+.is-info .wing-l { transform: translate(98px, 300px) rotate(74deg) scale(1, 1.1); }
+.is-info .move { transform: rotate(-3deg); }
+
+.is-success .move { animation: hop 700ms cubic-bezier(0.3, 1.4, 0.5, 1) forwards; }
+.is-success .wing-l { transform: translate(104px, 290px) rotate(148deg); }
+.is-success .wing-r { transform: translate(396px, 290px) rotate(-148deg); }
+.is-success .eye { opacity: 0; }
+.is-success .joy { opacity: 1; }
+.is-success .look { animation: none; }
+
+@keyframes hop {
+    0% { transform: translateY(0) scale(1, 1); }
+    35% { transform: translateY(6px) scale(1.05, 0.93); }
+    100% { transform: translateY(-16px) scale(0.97, 1.07); }
+}
+
+.reader {
+    position: absolute;
+    left: 0;
+    top: 590px;
+    width: 92px;
+    height: 132px;
+    display: grid;
+    place-items: center;
+    padding-right: 6px;
+    border-radius: 0 66px 66px 0;
+    background: var(--amber-soft);
+    color: var(--amber);
+    opacity: 0;
+    transform: translateX(-100%);
+    transition: opacity 300ms, transform 420ms cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+
+.reader svg { width: 52px; height: 52px; }
+
+.reader::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 3px solid var(--amber);
+    opacity: 0;
+}
+
+.is-info .reader { opacity: 1; transform: translateX(0); }
+.is-info .reader::after { animation: ping 1.6s ease-out infinite; }
+
+@keyframes ping {
+    0% { opacity: 0.6; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.35); }
+}
+
+.bubble {
+    --bubble: var(--white);
+    --bubble-ink: var(--navy);
+    position: absolute;
+    left: 736px;
+    top: 276px;
+    max-width: 360px;
+    padding: 22px 28px 24px;
+    border-radius: 30px;
+    background: var(--bubble);
+    color: var(--bubble-ink);
+    font-size: 25px;
+    font-weight: 600;
+    line-height: 1.32;
+    box-shadow: 0 14px 36px rgba(61, 90, 128, 0.12);
+    transform-origin: 0 100%;
+    transition: opacity 220ms, transform 320ms cubic-bezier(0.3, 1.5, 0.5, 1), background 200ms, color 200ms;
+}
+
+.bubble::before {
+    content: "";
+    position: absolute;
+    left: -9px;
+    bottom: 24px;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px 4px 4px 10px;
+    background: inherit;
+    transform: rotate(45deg);
+}
+
+.bubble span { position: relative; }
+
+.is-idle .bubble { opacity: 0; transform: scale(0.6); }
+.is-busy .bubble { --bubble-ink: var(--blue); }
+.is-error .bubble { --bubble: var(--red-soft); --bubble-ink: var(--red); }
+.is-info .bubble { --bubble: var(--amber-soft); --bubble-ink: #7d5413; }
+.is-success .bubble { --bubble: var(--green-soft); --bubble-ink: var(--green); }
+
+.clock {
+    position: absolute;
+    left: 96px;
+    top: 80px;
+}
+
+.time {
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -1px;
+    color: var(--navy);
+    font-feature-settings: "tnum" 1;
+}
+
+.date {
+    margin-top: 10px;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+form {
+    position: absolute;
+    left: 1160px;
+    top: 356px;
+    width: 540px;
+}
+
+.hello {
+    font-size: 30px;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.name {
+    margin-top: 2px;
+    font-size: 96px;
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -2px;
+    color: var(--navy);
+    white-space: nowrap;
+}
+
+.pill {
+    position: relative;
+    height: 84px;
+    margin-top: 38px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px 0 34px;
+    border-radius: 42px;
+    border: 2px solid #e2d8c8;
+    background: var(--white);
+    box-shadow: 0 12px 32px rgba(61, 90, 128, 0.10);
+    transition: border-color 160ms, box-shadow 160ms;
+}
+
+.pill:focus-within {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 7px rgba(61, 90, 128, 0.13), 0 12px 32px rgba(61, 90, 128, 0.10);
+}
+
+.pill input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    font-family: inherit;
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: 5px;
+    color: var(--navy);
+    caret-color: var(--blue);
+}
+
+.pill input::placeholder { letter-spacing: 0; font-weight: 500; color: var(--muted); opacity: 0.8; }
+
+.mirror {
+    position: absolute;
+    left: 34px;
+    visibility: hidden;
+    white-space: pre;
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: 5px;
+}
+
+.reveal {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--muted);
+}
+
+.reveal:hover { color: var(--blue); background: #f1ece3; }
+.reveal i[data-icon] { width: 28px; height: 28px; }
+
+.go {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--blue);
+    color: var(--white);
+    transition: background 160ms, transform 160ms;
+}
+
+.go:hover { background: var(--blue-deep); }
+.go i[data-icon] { width: 26px; height: 26px; }
+
+.go::after {
+    content: "";
+    position: absolute;
+    inset: 14px;
+    border-radius: 50%;
+    border: 3.5px solid rgba(255, 253, 249, 0.3);
+    border-top-color: var(--white);
+    opacity: 0;
+}
+
+.is-busy .go i[data-icon] { opacity: 0; }
+.is-busy .go::after { opacity: 1; animation: spin 800ms linear infinite; }
+.is-busy .pill { border-color: #b9c6d8; }
+.is-busy .pill input { color: var(--muted); }
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.is-error .pill {
+    border-color: var(--red);
+    box-shadow: 0 0 0 7px rgba(194, 69, 58, 0.14), 0 12px 32px rgba(61, 90, 128, 0.10);
+    animation: shake 380ms ease-in-out;
+}
+
+.is-error .go { background: var(--red); }
+.is-success .pill { border-color: var(--green); }
+.is-success .go { background: var(--green); }
+
+.under {
+    height: 34px;
+    margin-top: 14px;
+    padding-left: 34px;
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--amber);
+}
+
+.chips {
+    margin-top: 10px;
+    display: flex;
+    gap: 14px;
+}
+
+.chip {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 22px 0 16px;
+    border-radius: 25px;
+    background: var(--sand);
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--blue);
+    transition: background 140ms;
+}
+
+.chip:hover { background: #dbd0bd; }
+.chip small { font-size: 15px; font-weight: 600; color: var(--muted); }
+.chip i[data-icon] { width: 22px; height: 22px; }
+
+.tiles {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+}
+
+.tiles span { border-radius: 2.5px; background: currentColor; }
+.tiles span:nth-child(4) { border-radius: 50%; }
+
+.power {
+    position: absolute;
+    right: 84px;
+    bottom: 72px;
+    display: flex;
+    gap: 10px;
+}
+
+.power button {
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--blue);
+    transition: background 140ms;
+}
+
+.power button:hover { background: var(--sand); }
+.power i[data-icon] { width: 30px; height: 30px; }
+
+</style>
+</head>
+<body>
+<div class="stage" data-stage>
+    <div class="scene">
+        <div class="halo"></div>
+        <span class="speck a"></span>
+        <span class="speck b"></span>
+        <span class="speck c"></span>
+        <div class="shadow"></div>
+
+        <svg class="owl" viewBox="0 0 500 604" aria-hidden="true">
+            <rect x="8" y="520" width="484" height="62" rx="16" fill="var(--stone)"/>
+            <rect x="8" y="520" width="484" height="18" rx="9" fill="var(--stone-top)"/>
+            <text x="250" y="568" text-anchor="middle" font-size="17" font-weight="700" letter-spacing="9" fill="var(--stone-ink)">SEIREN</text>
+            <g class="move">
+                <rect x="186" y="508" width="40" height="18" rx="9" fill="var(--apricot)"/>
+                <rect x="274" y="508" width="40" height="18" rx="9" fill="var(--apricot)"/>
+                <g class="breathe">
+                    <g class="tufts">
+                        <rect x="-21" y="-52" width="42" height="104" rx="21" fill="var(--blue)" transform="translate(168 176) rotate(-30)"/>
+                        <rect x="-21" y="-52" width="42" height="104" rx="21" fill="var(--blue)" transform="translate(332 176) rotate(30)"/>
+                    </g>
+                    <ellipse cx="250" cy="340" rx="172" ry="186" fill="var(--blue)"/>
+                    <ellipse cx="250" cy="428" rx="112" ry="90" fill="#e6ebf1"/>
+                    <g fill="none" stroke="var(--blue)" stroke-width="5" stroke-linecap="round" opacity="0.28">
+                        <path d="M196 430 q12 10 24 0"/>
+                        <path d="M238 430 q12 10 24 0"/>
+                        <path d="M280 430 q12 10 24 0"/>
+                        <path d="M216 466 q12 10 24 0"/>
+                        <path d="M260 466 q12 10 24 0"/>
+                        <path d="M238 498 q12 8 24 0"/>
+                    </g>
+                    <path d="M214 352 Q250 384 286 352" fill="none" stroke="var(--gold)" stroke-width="4" stroke-linecap="round"/>
+                    <g transform="translate(250 384)" fill="var(--gold)">
+                        <circle cx="0" cy="0" r="13" fill="none" stroke="var(--gold)" stroke-width="6"/>
+                        <rect x="-3.5" y="10" width="7" height="34" rx="3"/>
+                        <rect x="2" y="30" width="11" height="6" rx="2"/>
+                        <rect x="2" y="39" width="8" height="5" rx="2"/>
+                    </g>
+                    <g class="tilt">
+                        <g class="face">
+                            <circle cx="192" cy="272" r="82" fill="#f7f2ea"/>
+                            <circle cx="308" cy="272" r="82" fill="#f7f2ea"/>
+                            <ellipse cx="150" cy="326" rx="20" ry="12" fill="#eba597" opacity="0.55"/>
+                            <ellipse cx="350" cy="326" rx="20" ry="12" fill="#eba597" opacity="0.55"/>
+                            <rect class="brow l" x="164" y="200" width="54" height="11" rx="5.5" fill="var(--navy)"/>
+                            <rect class="brow r" x="278" y="200" width="54" height="11" rx="5.5" fill="var(--navy)"/>
+                            <g class="look">
+                                <g class="gaze">
+                                    <g class="eye l">
+                                        <circle cx="192" cy="276" r="33" fill="#1e2b3c"/>
+                                        <circle cx="181" cy="264" r="10" fill="#fff"/>
+                                        <circle cx="203" cy="290" r="4" fill="#fff" opacity="0.7"/>
+                                    </g>
+                                    <g class="eye r">
+                                        <circle cx="308" cy="276" r="33" fill="#1e2b3c"/>
+                                        <circle cx="297" cy="264" r="10" fill="#fff"/>
+                                        <circle cx="319" cy="290" r="4" fill="#fff" opacity="0.7"/>
+                                    </g>
+                                </g>
+                            </g>
+                            <g class="joy" fill="none" stroke="#1e2b3c" stroke-width="10" stroke-linecap="round">
+                                <path d="M164 286 Q192 246 220 286"/>
+                                <path d="M280 286 Q308 246 336 286"/>
+                            </g>
+                            <path d="M250 300 Q266 320 250 344 Q234 320 250 300 Z" fill="var(--apricot)"/>
+                        </g>
+                    </g>
+                    <path class="drop" d="M392 214 Q404 236 392 246 Q380 236 392 214 Z" fill="#a9c4e0"/>
+                    <g class="wing wing-l">
+                        <ellipse cx="0" cy="92" rx="44" ry="104" fill="var(--blue-deep)"/>
+                        <path d="M-14 130 q14 12 28 0 M-14 156 q14 12 28 0" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.14"/>
+                    </g>
+                    <g class="wing wing-r">
+                        <ellipse cx="0" cy="92" rx="44" ry="104" fill="var(--blue-deep)"/>
+                        <path d="M-14 130 q14 12 28 0 M-14 156 q14 12 28 0" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.14"/>
+                    </g>
+                </g>
+            </g>
+        </svg>
+
+        <div class="reader" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round">
+                <path d="M12 14 a16 16 0 0 1 24 0"/>
+                <path d="M9 24 a15 15 0 0 1 30 -2"/>
+                <path d="M14 36 a11 11 0 0 1 -1 -10 a11 11 0 0 1 22 0 c0 4 -1 8 -3 11"/>
+                <path d="M19 40 c-2 -4 -2 -8 -1 -12 a6 6 0 0 1 12 1 c0 5 -1 9 -3 12"/>
+                <path d="M24 29 c0 5 0 9 -1 13"/>
+            </svg>
+        </div>
+
+        <div class="bubble"><span data-message></span></div>
+
+        <div class="clock">
+            <div class="time" data-clock="time"></div>
+            <div class="date" data-clock="long"></div>
+        </div>
+
+        <form data-login>
+            <div class="hello"><span data-clock="greeting"></span>,</div>
+            <div class="name" data-user-name></div>
+            <label class="pill">
+                <input data-field="password" type="password" placeholder="Password" aria-label="Password">
+                <span class="mirror" aria-hidden="true"></span>
+                <button type="button" class="reveal" data-action="reveal" title="Show password"><i data-icon="view-visible"></i></button>
+                <button type="submit" class="go" title="Log in"><i data-icon="go-next"></i></button>
+            </label>
+            <div class="under"><span data-capslock>⇪ Caps Lock is on</span></div>
+            <div class="chips">
+                <button type="button" class="chip" data-action="session" title="Session">
+                    <span class="tiles"><span></span><span></span><span></span><span></span></span>
+                    <small>Session</small><span data-session-name></span>
+                </button>
+                <button type="button" class="chip" data-action="switch-user" title="Switch user">
+                    <i data-icon="system-switch-user"></i>Switch user
+                </button>
+            </div>
+        </form>
+
+        <div class="power">
+            <button data-power="suspend" title="Sleep"><i data-icon="system-suspend"></i></button>
+            <button data-power="reboot" title="Restart"><i data-icon="system-reboot"></i></button>
+            <button data-power="shutdown" title="Power off"><i data-icon="system-shutdown"></i></button>
+        </div>
+    </div>
+</div>
+<div class="demo-hint">password <b>lintel</b> · <b>Ctrl+Alt</b> + <b>↑↓</b> state · <b>←→</b> design · <b>W</b> wallpaper <span data-wallpaper-name></span> · <b>S</b> session · <b>U</b> user · <b>V</b> show password · <b>Z</b> sleep · <b>B</b> restart · <b>Q</b> power off · <a href="index.html">all</a></div>
+<script src="shared/icons.js"></script>
+<script src="shared/wallpapers.js"></script>
+<script src="shared/demo.js"></script>
+<script>
+const GAZE_X_MIN = 4;
+const GAZE_X_SPAN = 28;
+const GAZE_Y_LIMIT = 12;
+const TILT_MAX_DEG = 6;
+const PASSWORD_MIRROR_MAX = 256;
+
+const owl = document.querySelector(".owl");
+const gaze = owl.querySelector(".gaze");
+const tilt = owl.querySelector(".tilt");
+const eye_left = owl.querySelector(".eye.l");
+const mirror = document.querySelector(".mirror");
+console.assert(gaze !== null && tilt !== null && eye_left !== null && mirror !== null);
+
+function mascot_update() {
+    const length = Math.min(field_password.value.length, PASSWORD_MIRROR_MAX);
+    const revealed = field_password.type === "text";
+    owl.classList.toggle("m-cover", revealed);
+    owl.classList.toggle("m-watch", length > 0 && !revealed);
+    if (length === 0 || revealed) {
+        gaze.style.transform = "";
+        tilt.style.transform = "";
+        mirror.textContent = "";
+        return;
+    }
+    mirror.textContent = "•".repeat(length);
+    const box = field_password.getBoundingClientRect();
+    const eye = eye_left.getBoundingClientRect();
+    const caret = Math.min(mirror.getBoundingClientRect().width, box.width);
+    const progress = caret / box.width;
+    console.assert(progress >= 0 && progress <= 1, progress);
+    const rise = (box.top + box.height / 2 - (eye.top + eye.height / 2)) / box.height;
+    const gaze_x = GAZE_X_MIN + GAZE_X_SPAN * progress;
+    const gaze_y = Math.max(-GAZE_Y_LIMIT, Math.min(GAZE_Y_LIMIT, rise * 4));
+    gaze.style.transform = `translate(${gaze_x}px, ${gaze_y}px)`;
+    tilt.style.transform = `rotate(${TILT_MAX_DEG * progress}deg)`;
+}
+
+field_password.addEventListener("input", mascot_update);
+new MutationObserver(mascot_update).observe(field_password, { attributes: true, attributeFilter: ["type"] });
+new MutationObserver(mascot_update).observe(stage, { attributes: true, attributeFilter: ["class"] });
+mascot_update();
+</script>
+</body>
+</html>

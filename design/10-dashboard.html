@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · 10 Dashboard</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+/* 10 Dashboard: the widget-card lockscreens of Quickshell shells (end-4,
+   caelestia, DankMaterialShell) and hyprlock widget configs. Only widgets a
+   greeter can honestly fill before login: clock, calendar, machine facts. No
+   music or weather, there is no user session or network guarantee yet. */
+
+.grid {
+    position: absolute;
+    left: 96px;
+    top: 176px;
+    width: 720px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.card {
+    padding: 24px 26px;
+    border-radius: 20px;
+    background: rgba(16, 9, 8, 0.82);
+    border: 1px solid rgba(242, 232, 216, 0.08);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(242, 232, 216, 0.05);
+    transition: opacity 400ms;
+}
+
+.wide { grid-column: 1 / 3; }
+
+.label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--lacquer);
+}
+
+.clock-card { display: flex; align-items: flex-end; justify-content: space-between; }
+.clock { font-size: 104px; font-weight: 700; line-height: 0.9; letter-spacing: -3px; }
+.clock-side { text-align: right; }
+.weekday { font-size: 26px; font-weight: 600; }
+.date-long { margin-top: 4px; font-size: 15px; color: rgba(242, 232, 216, 0.6); }
+
+.chip {
+    display: inline-flex;
+    gap: 5px;
+    margin-top: 10px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(242, 232, 216, 0.08);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: rgba(242, 232, 216, 0.65);
+}
+
+.chip b { color: var(--parchment); }
+
+.calendar { margin-top: 14px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 13px; }
+.calendar .head { color: rgba(242, 232, 216, 0.4); font-weight: 600; padding-bottom: 4px; }
+.calendar .day { height: 30px; line-height: 30px; border-radius: 8px; color: rgba(242, 232, 216, 0.8); }
+.calendar .muted { color: rgba(242, 232, 216, 0.3); }
+.calendar .today { background: var(--lacquer); color: var(--parchment); font-weight: 700; }
+.month { margin-top: 4px; font-size: 18px; font-weight: 600; }
+
+.host { margin-top: 4px; font-size: 22px; font-weight: 600; line-height: 1.2; }
+.build { margin-top: 2px; font-size: 13px; color: rgba(242, 232, 216, 0.5); }
+
+.facts {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(242, 232, 216, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.fact { display: flex; justify-content: space-between; color: rgba(242, 232, 216, 0.55); }
+.fact b { color: var(--parchment); font-weight: 600; }
+
+.meter { margin-top: 6px; height: 6px; border-radius: 3px; background: rgba(242, 232, 216, 0.1); }
+.meter span { display: block; height: 100%; border-radius: 3px; background: var(--jade); }
+.meter.battery span { width: 87%; }
+.meter.disk span { width: 61%; background: var(--gold); }
+
+.login-card { display: flex; flex-direction: column; }
+
+form { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+
+.avatar {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: var(--lacquer-deep);
+    font-size: 22px;
+    font-weight: 700;
+    flex: none;
+}
+
+.who { display: flex; flex-direction: column; width: 150px; flex: none; }
+.who .name { font-size: 18px; font-weight: 600; text-align: left; }
+.who .name:hover { color: var(--gold); }
+.who small { font-size: 13px; color: rgba(242, 232, 216, 0.5); }
+
+.field {
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px 0 18px;
+    border-radius: 16px;
+    background: rgba(242, 232, 216, 0.07);
+    border: 1px solid transparent;
+    transition: border-color 150ms;
+}
+
+.field:focus-within { border-color: rgba(230, 179, 92, 0.6); }
+.field input { flex: 1; min-width: 0; font-size: 16px; letter-spacing: 1px; }
+
+.field::after {
+    content: "";
+    position: absolute;
+    left: -40%;
+    bottom: 0;
+    width: 40%;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--gold);
+    opacity: 0;
+}
+
+.reveal { display: inline-flex; color: rgba(242, 232, 216, 0.5); }
+.reveal:hover { color: var(--parchment); }
+
+.go { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--lacquer); flex: none; transition: background 200ms; }
+.go:hover { background: #dc4d37; }
+
+.notes { margin: 10px 0 0 230px; min-height: 22px; display: flex; align-items: center; gap: 16px; font-size: 14px; }
+.message { display: flex; align-items: center; gap: 8px; color: rgba(242, 232, 216, 0.75); }
+.message::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+.message:empty { display: none; }
+.capslock { color: var(--gold); }
+
+.is-busy .message::before { animation: blink 900ms ease-in-out infinite; }
+.is-busy .field { border-color: rgba(242, 232, 216, 0.18); }
+.is-busy .field::after { opacity: 1; animation: sweep 1100ms ease-in-out infinite; }
+.is-busy .go { opacity: 0.5; }
+
+.is-error .message { color: var(--danger); }
+.is-error .field { border-color: var(--danger); animation: shake 360ms ease-in-out; }
+
+.is-info .message { color: var(--jade); }
+
+.is-success .message { color: var(--jade); }
+.is-success .field { border-color: rgba(63, 174, 154, 0.7); }
+.is-success .field::after { left: 0; width: 100%; opacity: 1; background: var(--jade); }
+.is-success .go { background: var(--jade); }
+.is-success .card:not(.login-card) { opacity: 0.45; }
+
+@keyframes sweep {
+    from { left: -40%; }
+    to { left: 100%; }
+}
+
+@keyframes blink {
+    50% { opacity: 0.25; }
+}
+
+.actions { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding-top: 14px; border-top: 1px solid rgba(242, 232, 216, 0.08); }
+
+.actions button {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    border-radius: 12px;
+    background: rgba(242, 232, 216, 0.05);
+    font-size: 14px;
+    color: rgba(242, 232, 216, 0.75);
+}
+
+.actions button:hover { color: var(--parchment); background: rgba(242, 232, 216, 0.12); }
+.actions .session { margin-right: auto; }
+.actions b { color: var(--parchment); font-weight: 600; }
+.actions i[data-icon] { width: 22px; height: 22px; }
+</style>
+</head>
+<body>
+<div class="stage" data-stage>
+    <div class="grid">
+        <div class="card wide clock-card">
+            <div class="clock tabular" data-clock="time"></div>
+            <div class="clock-side">
+                <div class="weekday" data-clock="weekday"></div>
+                <div class="date-long" data-clock="day-month-year"></div>
+                <div class="chip">Day <b data-clock="day-of-year"></b></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="label">Calendar</div>
+            <div class="month" data-clock="month-year"></div>
+            <div class="calendar" data-calendar></div>
+        </div>
+
+        <div class="card">
+            <div class="label">System</div>
+            <div class="host">seiren</div>
+            <div class="build">NixOS 26.05 · Linux 7.2.14-zen1</div>
+            <div class="facts">
+                <div class="fact">Uptime <b>3 min</b></div>
+                <div class="fact">Memory <b>1.1 / 32 GB</b></div>
+                <div class="fact">Keyboard <b>us</b></div>
+            </div>
+            <div class="facts">
+                <div>
+                    <div class="fact">Battery <b>87%</b></div>
+                    <div class="meter battery"><span></span></div>
+                </div>
+                <div>
+                    <div class="fact">Disk / <b>61%</b></div>
+                    <div class="meter disk"><span></span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card wide login-card">
+            <div class="label">Sign in</div>
+            <form data-login>
+                <div class="avatar" data-user-initial></div>
+                <div class="who">
+                    <button type="button" class="name" data-action="switch-user" data-user-name title="Switch user"></button>
+                    <small data-clock="greeting"></small>
+                </div>
+                <label class="field">
+                    <input data-field="password" type="password" placeholder="Password">
+                    <button type="button" class="reveal" data-action="reveal" title="Show password"><i data-icon="view-visible"></i></button>
+                    <button class="go" type="submit" title="Log in"><i data-icon="go-next"></i></button>
+                </label>
+            </form>
+            <div class="notes">
+                <span class="message" data-message></span>
+                <span class="capslock" data-capslock>Caps Lock is on</span>
+            </div>
+            <div class="actions">
+                <button class="session" data-action="session">Session&nbsp;<b data-session-name></b></button>
+                <button data-power="suspend"><i data-icon="system-suspend"></i>Sleep</button>
+                <button data-power="reboot"><i data-icon="system-reboot"></i>Restart</button>
+                <button data-power="shutdown"><i data-icon="system-shutdown"></i>Shut Down</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="demo-hint">password <b>lintel</b> · <b>Ctrl+Alt</b> + <b>↑↓</b> state · <b>←→</b> design · <b>W</b> wallpaper <span data-wallpaper-name></span> · <b>S</b> session · <b>U</b> user · <b>V</b> show password · <b>Z</b> sleep · <b>B</b> restart · <b>Q</b> power off · <a href="index.html">all</a></div>
+<script src="shared/icons.js"></script>
+<script src="shared/wallpapers.js"></script>
+<script src="shared/demo.js"></script>
+<script>
+// Month grid, Monday first, padded with the neighbouring months' days.
+function calendar_render(target, now) {
+    const first = new Date(now.getFullYear(), now.getMonth(), 1);
+    const offset = (first.getDay() + 6) % 7;
+    const cells = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((name) => `<span class="head">${name}</span>`);
+    for (let index = 0; index < 42; index += 1) {
+        const date = new Date(now.getFullYear(), now.getMonth(), 1 - offset + index);
+        const muted = date.getMonth() !== now.getMonth();
+        const today = date.toDateString() === now.toDateString();
+        const name = today ? "day today" : muted ? "day muted" : "day";
+        cells.push(`<span class="${name}">${date.getDate()}</span>`);
+    }
+    target.innerHTML = cells.join("");
+}
+
+calendar_render(document.querySelector("[data-calendar]"), new Date());
+</script>
+</body>
+</html>

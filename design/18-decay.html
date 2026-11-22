@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · 18 Decay</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+@font-face {
+    font-family: "Lexend Exa";
+    src: url("assets/fonts/LexendExa-Variable.ttf") format("truetype");
+    font-weight: 100 900;
+    font-style: normal;
+}
+
+.stage {
+    --amber: #f28c28;
+    --base: #0b0a08;
+    --bone: #f7dfb8;
+    --dim: rgba(242, 140, 40, 0.62);
+    --faint: rgba(242, 140, 40, 0.3);
+    --hair: rgba(242, 140, 40, 0.22);
+    --glow: rgba(242, 140, 40, 0.5);
+    --tint: #f28c28;
+    --fault: #ff4a82;
+    --fault-tint: #d8265f;
+    --mono: "Adwaita Mono", "DejaVu Sans Mono", monospace;
+    --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    --field: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.0022 0.004' numOctaves='4' seed='7'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncR type='gamma' exponent='1.6'/><feFuncG type='gamma' exponent='1.6'/><feFuncB type='gamma' exponent='1.6'/></feComponentTransfer></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
+    background: var(--base);
+    color: var(--bone);
+    font-family: "Lexend Exa", var(--font-sans);
+    font-weight: 300;
+}
+
+.specimen {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.specimen.is-warping { filter: url(#warp); }
+
+.field-noise {
+    position: absolute;
+    inset: -12%;
+    background: var(--field) center / cover no-repeat;
+    filter: contrast(1.9) brightness(0.5);
+    animation: field-drift 38s ease-in-out infinite alternate;
+}
+
+.lens {
+    position: absolute;
+    inset: 0;
+    transform: scale(1.22);
+    transform-origin: 46% 42%;
+    transition: transform 1600ms cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+
+.plate,
+.ghost {
+    position: absolute;
+    inset: 0;
+    background: var(--wallpaper) center / cover no-repeat;
+    filter: grayscale(1) contrast(1.3) brightness(0.82);
+}
+
+.ghost {
+    opacity: 0.34;
+    mix-blend-mode: screen;
+    translate: 16px -6px;
+    transition: translate 900ms cubic-bezier(0.3, 0.7, 0.2, 1), opacity 900ms;
+}
+
+.tint {
+    position: absolute;
+    inset: 0;
+    background: var(--tint);
+    mix-blend-mode: multiply;
+    transition: background-color 260ms, opacity 1400ms;
+}
+
+.lift {
+    position: absolute;
+    inset: 0;
+    background: var(--base);
+    mix-blend-mode: lighten;
+    transition: opacity 1400ms;
+}
+
+.bloom {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 70% at 62% 44%, rgba(242, 140, 40, 0.22), transparent 70%);
+    mix-blend-mode: screen;
+    transition: opacity 1400ms;
+}
+
+.true {
+    position: absolute;
+    inset: 0;
+    background: var(--wallpaper) center / cover no-repeat;
+    opacity: 0;
+    transition: opacity 1600ms ease-out;
+}
+
+.scan {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 220px;
+    background:
+        linear-gradient(180deg, transparent, rgba(255, 196, 120, 0.12) 82%, rgba(255, 226, 180, 0.85) 99%, rgba(255, 240, 210, 1));
+    mix-blend-mode: screen;
+    opacity: 0;
+    transform: translateY(-240px);
+}
+
+.lines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.34) 0 1px, transparent 1px 3px);
+    transition: opacity 1400ms;
+}
+
+.grain {
+    position: absolute;
+    inset: -240px;
+    background: var(--noise) 0 0 / 240px 240px repeat;
+    opacity: 0.09;
+    mix-blend-mode: overlay;
+    animation: grain-jump 900ms steps(6) infinite;
+    transition: opacity 1400ms;
+}
+
+.vignette {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 78% 72% at 52% 48%, transparent 52%, rgba(6, 5, 4, 0.78) 100%),
+        linear-gradient(90deg, rgba(11, 10, 8, 0.82) 0, rgba(11, 10, 8, 0.62) 30%, rgba(11, 10, 8, 0.12) 56%, transparent 70%),
+        linear-gradient(0deg, rgba(11, 10, 8, 0.7) 0, transparent 22%);
+    transition: opacity 1400ms;
+}
+
+.frame-mark {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border: 0 solid var(--faint);
+    transition: opacity 900ms;
+}
+
+.frame-mark.tl { left: 48px; top: 48px; border-left-width: 1px; border-top-width: 1px; }
+.frame-mark.tr { right: 48px; top: 48px; border-right-width: 1px; border-top-width: 1px; }
+.frame-mark.bl { left: 48px; bottom: 48px; border-left-width: 1px; border-bottom-width: 1px; }
+.frame-mark.br { right: 48px; bottom: 48px; border-right-width: 1px; border-bottom-width: 1px; }
+
+.caps {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+}
+
+.ui { transition: opacity 900ms 300ms; }
+
+.tag {
+    position: absolute;
+    left: 96px;
+    top: 92px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tag .mark {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--amber);
+}
+
+.tag .mark::before {
+    content: "";
+    width: 9px;
+    height: 9px;
+    border: 1px solid var(--amber);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--glow);
+}
+
+.tag .sample { color: var(--dim); padding-left: 23px; }
+
+.readout {
+    padding-left: 23px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.14em;
+    color: var(--dim);
+    white-space: pre;
+}
+
+.clock {
+    position: absolute;
+    right: 92px;
+    top: 88px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    writing-mode: vertical-rl;
+    text-shadow: 0 0 18px rgba(0, 0, 0, 0.8);
+}
+
+.clock .time {
+    font-size: 36px;
+    font-weight: 300;
+    letter-spacing: 0.34em;
+    color: var(--bone);
+    font-feature-settings: "tnum" 1;
+}
+
+.clock .date {
+    padding-top: 6px;
+    color: var(--dim);
+    letter-spacing: 0.5em;
+}
+
+.clock .rule {
+    height: 420px;
+    background:
+        repeating-linear-gradient(180deg, var(--faint) 0 1px, transparent 1px 24px) right / 7px 100% no-repeat,
+        linear-gradient(var(--hair), var(--hair)) right / 1px 100% no-repeat;
+    width: 7px;
+}
+
+.column {
+    position: absolute;
+    left: 300px;
+    top: 296px;
+    width: 660px;
+}
+
+.column::before {
+    content: "";
+    position: absolute;
+    left: -44px;
+    top: 4px;
+    bottom: -96px;
+    width: 7px;
+    transition: opacity 900ms 300ms;
+    background:
+        repeating-linear-gradient(180deg, var(--faint) 0 1px, transparent 1px 16px) left / 7px 100% no-repeat,
+        linear-gradient(var(--hair), var(--hair)) left / 1px 100% no-repeat;
+}
+
+.heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--hair);
+    color: var(--dim);
+}
+
+.heading b { font-weight: 500; color: var(--amber); }
+
+.roster {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin-top: 18px;
+    text-align: left;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: 34px;
+    height: 70px;
+    padding-left: 22px;
+    color: rgba(242, 140, 40, 0.34);
+    transition: color 240ms;
+}
+
+.row .index {
+    width: 24px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.1em;
+}
+
+.row .name {
+    font-size: 40px;
+    font-weight: 300;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.row.is-active { color: var(--bone); text-shadow: 0 0 22px rgba(242, 140, 40, 0.45); }
+.row.is-active .index { color: var(--amber); }
+.roster:hover .row:not(.is-active) { color: rgba(242, 140, 40, 0.55); }
+
+.cursor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 70px;
+    width: 300px;
+    pointer-events: none;
+}
+
+.cursor.is-live { transition: transform 380ms cubic-bezier(0.5, 0, 0.1, 1), width 380ms cubic-bezier(0.5, 0, 0.1, 1); }
+
+.cursor::before,
+.cursor::after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    width: 12px;
+    border: 1.5px solid var(--amber);
+    box-shadow: 0 0 10px var(--glow);
+    transition: border-color 260ms;
+}
+
+.cursor::before { left: 0; border-right: none; }
+.cursor::after { right: 0; border-left: none; animation: bracket-blink 1.1s steps(1) infinite; }
+
+.key {
+    height: 22px;
+    margin-top: 44px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--dim);
+}
+
+.key .who { color: var(--amber); }
+
+.capslock {
+    padding: 4px 8px 4px 11px;
+    color: var(--base);
+    background: var(--amber);
+}
+
+.slot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 70px;
+    margin-top: 14px;
+    border: 1px solid rgba(242, 140, 40, 0.42);
+    background: linear-gradient(90deg, rgba(11, 10, 8, 0.72), rgba(11, 10, 8, 0.4));
+    transition: border-color 200ms;
+}
+
+.slot::before,
+.slot::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 0 solid var(--amber);
+}
+
+.slot::before { left: -4px; top: -4px; border-left-width: 2px; border-top-width: 2px; }
+.slot::after { right: -4px; bottom: -4px; border-right-width: 2px; border-bottom-width: 2px; }
+.slot:focus-within { border-color: rgba(242, 140, 40, 0.75); }
+
+.slot input {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: calc(100% - 140px);
+    height: 100%;
+    opacity: 0;
+    cursor: text;
+}
+
+.burn {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-left: 26px;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.burn.is-reveal { gap: 4px; }
+
+.burn .dot {
+    position: relative;
+    flex: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #f5a24c;
+    box-shadow: 0 0 6px 1px rgba(242, 140, 40, 0.5);
+    animation: burn-in 1100ms cubic-bezier(0.2, 0.6, 0.2, 1) both;
+}
+
+.burn .dot::after {
+    content: "";
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(120, 52, 10, 0.55) 30%, transparent 70%);
+    z-index: -1;
+    animation: scorch 2400ms ease-out both;
+}
+
+.burn .glyph {
+    flex: none;
+    font: 24px/1 var(--mono);
+    color: var(--bone);
+    animation: burn-in 700ms ease-out both;
+}
+
+.burn .is-settled,
+.burn .is-settled::after { animation: none; }
+
+.caret {
+    flex: none;
+    width: 12px;
+    height: 26px;
+    margin-left: -4px;
+    background: var(--amber);
+    opacity: 0;
+    box-shadow: 0 0 10px var(--glow);
+}
+
+.slot:focus-within .caret { opacity: 1; animation: cursor-blink 1.1s steps(1) infinite; }
+
+.slot .act {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 70px;
+    height: 100%;
+    color: var(--dim);
+    border-left: 1px solid var(--hair);
+    transition: color 150ms, background 150ms;
+}
+
+.slot .act:hover { color: var(--bone); background: rgba(242, 140, 40, 0.1); }
+.slot .act i[data-icon] { width: 20px; height: 20px; }
+.slot .enter { color: var(--amber); }
+
+.status {
+    position: relative;
+    min-height: 130px;
+    margin-top: 22px;
+}
+
+.message {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font: 14px/1.4 var(--mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+}
+
+.message:empty { display: none; }
+
+.message::before {
+    flex: none;
+    font: 500 10px/1 "Lexend Exa", var(--font-sans);
+    letter-spacing: 0.32em;
+    padding: 6px 7px 6px 10px;
+}
+
+.typed {
+    display: none;
+    padding: 14px 0 14px 22px;
+    border-left: 2px solid var(--amber);
+    background: linear-gradient(90deg, rgba(242, 140, 40, 0.12), transparent 80%);
+}
+
+.typed .head { color: var(--amber); }
+
+.typed .body {
+    margin-top: 12px;
+    max-width: 560px;
+    font: 20px/1.5 var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--bone);
+}
+
+.typed .body::after {
+    content: "";
+    display: inline-block;
+    width: 11px;
+    height: 20px;
+    margin-left: 4px;
+    vertical-align: -3px;
+    background: var(--amber);
+    animation: cursor-blink 0.9s steps(1) infinite;
+}
+
+.session {
+    position: absolute;
+    left: 96px;
+    bottom: 88px;
+    text-align: left;
+}
+
+.session .label {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    color: var(--dim);
+}
+
+.ticks { display: flex; gap: 6px; }
+
+.ticks span {
+    width: 14px;
+    height: 3px;
+    background: var(--faint);
+    transition: background 200ms;
+}
+
+.ticks span.is-active { background: var(--amber); box-shadow: 0 0 6px var(--glow); }
+
+.session .value {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 14px;
+    font-size: 19px;
+    font-weight: 400;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--bone);
+}
+
+.session .value::after {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-top: 1.5px solid var(--amber);
+    border-right: 1.5px solid var(--amber);
+    transform: rotate(45deg);
+    transition: transform 160ms;
+}
+
+.session:hover .value::after { transform: translateX(4px) rotate(45deg); }
+
+.power {
+    position: absolute;
+    right: 96px;
+    bottom: 88px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 16px;
+}
+
+.power .label { color: var(--dim); }
+.power .row-power { display: flex; gap: 34px; }
+
+.power button {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    color: var(--dim);
+    transition: color 150ms;
+}
+
+.power button:hover { color: var(--bone); }
+.power i[data-icon] { width: 16px; height: 16px; }
+.power .off { color: var(--amber); }
+
+.is-busy .ghost { translate: 52px -14px; opacity: 0.46; }
+.is-busy .lens { animation: lens-breathe 1600ms ease-in-out infinite; }
+.is-busy .scan { opacity: 1; animation: scan-sweep 1700ms cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.is-busy .slot { border-color: rgba(242, 140, 40, 0.75); }
+.is-busy .slot .burn .dot { animation: dot-flicker 900ms steps(2) infinite; }
+.is-busy .burn .dot:nth-child(2n) { animation-delay: -300ms; }
+.is-busy .burn .dot:nth-child(3n) { animation-delay: -600ms; }
+.is-busy .message { color: var(--amber); }
+.is-busy .message::before { content: "SCAN"; color: var(--base); background: var(--amber); animation: cursor-blink 700ms steps(1) infinite; }
+
+.is-error {
+    --tint: var(--fault-tint);
+    --amber: var(--fault);
+    --dim: rgba(255, 74, 130, 0.66);
+    --faint: rgba(255, 74, 130, 0.32);
+    --hair: rgba(255, 74, 130, 0.24);
+    --glow: rgba(255, 74, 130, 0.5);
+}
+.is-error .ghost { translate: -22px 4px; opacity: 0.4; }
+.is-error .bloom { opacity: 0.4; }
+.is-error .slot { border-color: var(--fault); animation: slot-tear 300ms steps(6) both; }
+.is-error .message { color: #ff8db0; text-shadow: 0 0 14px rgba(0, 0, 0, 0.9); }
+.is-error .message::before { content: "FAULT"; color: #12060a; background: var(--fault); }
+.is-error .row:not(.is-active) { color: rgba(255, 74, 130, 0.3); }
+.is-error .row.is-active { text-shadow: 0 0 22px rgba(255, 74, 130, 0.45); }
+
+.is-info .message { display: none; }
+.is-info .typed { display: block; }
+.is-info .ghost { translate: 8px -3px; }
+
+.is-success .lens { transform: scale(1); }
+.is-success .ghost { translate: 0 0; opacity: 0; }
+.is-success .tint,
+.is-success .lift,
+.is-success .bloom { opacity: 0; }
+.is-success .true { opacity: 1; }
+.is-success .lines,
+.is-success .grain { opacity: 0; }
+.is-success .vignette { opacity: 0.35; }
+.is-success .ui,
+.is-success .frame-mark,
+.is-success .column::before { opacity: 0; }
+.is-success .status { opacity: 1; }
+.is-success .slot,
+.is-success .key { opacity: 0; transition: opacity 600ms; }
+.is-success .message {
+    display: inline-flex;
+    padding: 12px 18px 12px 0;
+    color: #fff4e2;
+    background: rgba(11, 10, 8, 0.62);
+    font-size: 16px;
+}
+.is-success .message::before { content: "CLEAR"; margin-left: 0; color: #0b0a08; background: #fff4e2; }
+
+@keyframes field-drift {
+    0% { transform: translate(-3%, 2%) scale(1); }
+    100% { transform: translate(4%, -3%) scale(1.08); }
+}
+
+@keyframes grain-jump {
+    0% { transform: translate(0, 0); }
+    20% { transform: translate(-60px, 40px); }
+    40% { transform: translate(80px, -30px); }
+    60% { transform: translate(-30px, -90px); }
+    80% { transform: translate(110px, 70px); }
+    100% { transform: translate(0, 0); }
+}
+
+@keyframes scan-sweep {
+    0% { transform: translateY(-240px); }
+    100% { transform: translateY(1100px); }
+}
+
+@keyframes lens-breathe {
+    0%, 100% { transform: scale(1.22); }
+    50% { transform: scale(1.235); }
+}
+
+@keyframes cursor-blink {
+    0%, 60% { opacity: 1; }
+    61%, 100% { opacity: 0.15; }
+}
+
+@keyframes bracket-blink {
+    0%, 60% { opacity: 1; }
+    61%, 100% { opacity: 0.4; }
+}
+
+@keyframes burn-in {
+    0% { background: #fff6e4; box-shadow: 0 0 22px 8px rgba(255, 196, 120, 0.95); transform: scale(1.7); }
+    35% { background: #ffd79e; box-shadow: 0 0 14px 4px rgba(255, 170, 80, 0.8); transform: scale(1.1); }
+    100% { background: #f5a24c; box-shadow: 0 0 6px 1px rgba(242, 140, 40, 0.5); transform: scale(1); }
+}
+
+@keyframes scorch {
+    0% { opacity: 0; transform: scale(0.4); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes dot-flicker {
+    0% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
+@keyframes slot-tear {
+    0% { transform: translateX(0); }
+    17% { transform: translateX(-18px); }
+    33% { transform: translateX(14px); }
+    50% { transform: translateX(-9px); }
+    67% { transform: translateX(6px); }
+    83% { transform: translateX(-2px); }
+    100% { transform: translateX(0); }
+}
+</style>
+</head>
+<body>
+<div class="stage" data-stage>
+    <div class="specimen">
+        <div class="field-noise"></div>
+        <div class="lens">
+            <div class="plate"></div>
+            <div class="ghost"></div>
+        </div>
+        <div class="tint"></div>
+        <div class="lift"></div>
+        <div class="bloom"></div>
+        <div class="true"></div>
+        <div class="scan"></div>
+        <div class="lines"></div>
+        <div class="grain"></div>
+        <div class="vignette"></div>
+    </div>
+
+    <svg width="0" height="0" aria-hidden="true" style="position: absolute">
+        <filter id="warp" x="-10%" y="0" width="120%" height="100%" color-interpolation-filters="sRGB">
+            <feTurbulence id="warp-noise" type="fractalNoise" baseFrequency="0.0004 0.045" numOctaves="2" seed="1" result="noise"/>
+            <feColorMatrix in="noise" type="matrix" values="1 0 0 0 0  0 0 0 0 0.5  0 0 0 0 0  0 0 0 0 1" result="bands"/>
+            <feDisplacementMap id="warp-map" in="SourceGraphic" in2="bands" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+    </svg>
+
+    <span class="frame-mark tl"></span>
+    <span class="frame-mark tr"></span>
+    <span class="frame-mark bl"></span>
+    <span class="frame-mark br"></span>
+
+    <div class="tag ui">
+        <div class="mark caps">Lintel · Seiren</div>
+        <div class="sample caps">Specimen <span data-clock="day-of-year"></span> / <span data-clock="year"></span></div>
+        <div class="readout" data-readout></div>
+    </div>
+
+    <div class="clock ui">
+        <span class="time" data-clock="time"></span>
+        <span class="date caps" data-clock="long"></span>
+        <span class="rule"></span>
+    </div>
+
+    <form class="column" data-login>
+        <div class="heading caps ui"><span>Subject</span><b data-roster-count></b></div>
+        <button type="button" class="roster ui" data-action="switch-user" title="Switch user">
+            <span class="cursor" data-cursor></span>
+            <span data-roster></span>
+        </button>
+
+        <div class="key caps"><span>Key · <span class="who" data-user-name></span></span><span class="capslock caps" data-capslock>Caps lock</span></div>
+        <label class="slot">
+            <input data-field="password" type="password" maxlength="128" autocomplete="off" aria-label="Password">
+            <span class="burn" data-burn></span>
+            <button type="button" class="act" data-action="reveal" title="Show password"><i data-icon="view-visible"></i></button>
+            <button type="button" class="act enter" data-action="login" title="Log in"><i data-icon="go-next"></i></button>
+        </label>
+
+        <div class="status">
+            <div class="message" data-message></div>
+            <div class="typed">
+                <div class="head caps">Transmission</div>
+                <div class="body" data-typed></div>
+            </div>
+        </div>
+    </form>
+
+    <button class="session ui" data-action="session" title="Next session">
+        <span class="label caps">Session <span class="ticks" data-ticks></span></span>
+        <span class="value" data-session-name></span>
+    </button>
+
+    <div class="power ui">
+        <span class="label caps">Power</span>
+        <div class="row-power">
+            <button class="caps" data-power="suspend"><i data-icon="system-suspend"></i>Suspend</button>
+            <button class="caps" data-power="reboot"><i data-icon="system-reboot"></i>Restart</button>
+            <button class="caps off" data-power="shutdown"><i data-icon="system-shutdown"></i>Power off</button>
+        </div>
+    </div>
+</div>
+<div class="demo-hint">password <b>lintel</b> · <b>Ctrl+Alt</b> + <b>↑↓</b> state · <b>←→</b> design · <b>W</b> wallpaper <span data-wallpaper-name></span> · <b>S</b> session · <b>U</b> user · <b>V</b> show password · <b>Z</b> sleep · <b>B</b> restart · <b>Q</b> power off · <a href="index.html">all</a></div>
+<script src="shared/icons.js"></script>
+<script src="shared/wallpapers.js"></script>
+<script src="shared/demo.js"></script>
+<script>
+const BURN_VISIBLE_MAX = 30;
+const WARP_MS = 300;
+const WARP_SCALE_MAX = 120;
+const TYPE_STEP_MS = 32;
+const TYPE_TEXT_MAX = 240;
+const READOUT = {
+    idle: "MAG 1.22×   GHOST 16 PX   DECAY 0.82",
+    busy: "MAG 1.22×   GHOST 52 PX   DECAY 0.97   SCAN",
+    error: "MAG 1.22×   WARP 300 MS   DECAY 1.00   FAULT",
+    info: "MAG 1.22×   GHOST 08 PX   DECAY 0.74   NOTE",
+    success: "MAG 1.00×   GHOST 00 PX   DECAY 0.00",
+};
+
+const specimen = document.querySelector(".specimen");
+const warp_map = document.querySelector("#warp-map");
+const warp_noise = document.querySelector("#warp-noise");
+const burn = document.querySelector("[data-burn]");
+const roster = document.querySelector("[data-roster]");
+const cursor = document.querySelector("[data-cursor]");
+const roster_count = document.querySelector("[data-roster-count]");
+const ticks = document.querySelector("[data-ticks]");
+const readout = document.querySelector("[data-readout]");
+const typed = document.querySelector("[data-typed]");
+const user_name = document.querySelector("[data-user-name]");
+const session_name = document.querySelector("[data-session-name]");
+console.assert(burn !== null && roster !== null && cursor !== null && typed !== null);
+
+let burn_count = 0;
+let burn_reveal = false;
+let warp_start = 0;
+let type_timer = 0;
+let type_text = "";
+
+function caret_make() {
+    const caret = document.createElement("span");
+    caret.className = "caret";
+    return caret;
+}
+
+function burn_render(settled) {
+    const value = field_password.value;
+    const reveal = field_password.type === "text";
+    console.assert(value.length <= 128, value.length);
+    if (reveal !== burn_reveal || settled || value.length < burn_count) {
+        burn.replaceChildren();
+        burn_count = 0;
+        burn_reveal = reveal;
+        burn.classList.toggle("is-reveal", reveal);
+    }
+    const shown = Math.min(value.length, BURN_VISIBLE_MAX);
+    const start = value.length - shown;
+    const caret = burn.querySelector(".caret");
+    if (caret !== null) caret.remove();
+    while (burn.children.length > shown) burn.firstElementChild.remove();
+    for (let index = burn.children.length; index < shown; index += 1) {
+        const node = document.createElement("span");
+        if (reveal) {
+            node.className = settled ? "glyph is-settled" : "glyph";
+            node.textContent = value[start + index];
+        } else {
+            node.className = settled ? "dot is-settled" : "dot";
+        }
+        burn.append(node);
+    }
+    if (reveal) {
+        for (let index = 0; index < shown; index += 1) burn.children[index].textContent = value[start + index];
+    }
+    burn_count = value.length;
+    burn.append(caret_make());
+}
+
+function roster_render() {
+    const active = USERS.indexOf(user_name.textContent);
+    console.assert(active !== -1, user_name.textContent);
+    if (roster.children.length !== USERS.length) {
+        roster.replaceChildren();
+        USERS.forEach((name, index) => {
+            const row = document.createElement("span");
+            row.className = "row";
+            row.innerHTML = `<span class="index">${String(index + 1).padStart(2, "0")}</span><span class="name"></span>`;
+            row.querySelector(".name").textContent = name;
+            roster.append(row);
+        });
+    }
+    [...roster.children].forEach((row, index) => row.classList.toggle("is-active", index === active));
+    const row = roster.children[active];
+    const width = row.querySelector(".name").offsetLeft + row.querySelector(".name").offsetWidth + 22;
+    cursor.style.width = `${width}px`;
+    cursor.style.transform = `translateY(${row.offsetTop}px)`;
+    roster_count.textContent = `${String(active + 1).padStart(2, "0")} / ${String(USERS.length).padStart(2, "0")}`;
+}
+
+function ticks_render() {
+    const active = SESSIONS.indexOf(session_name.textContent);
+    console.assert(active !== -1, session_name.textContent);
+    if (ticks.children.length !== SESSIONS.length) {
+        ticks.replaceChildren(...SESSIONS.map(() => document.createElement("span")));
+    }
+    [...ticks.children].forEach((tick, index) => tick.classList.toggle("is-active", index === active));
+}
+
+function state_current() {
+    const found = STATES.find((each) => stage.classList.contains(`is-${each}`));
+    return found === undefined ? "idle" : found;
+}
+
+function warp_frame(now) {
+    if (warp_start === 0) warp_start = now;
+    const progress = (now - warp_start) / WARP_MS;
+    if (progress >= 1) {
+        warp_map.setAttribute("scale", "0");
+        specimen.classList.remove("is-warping");
+        warp_start = 0;
+        return;
+    }
+    const amount = Math.sin(progress * Math.PI) * (1 - progress * 0.4);
+    warp_map.setAttribute("scale", String(Math.round(WARP_SCALE_MAX * amount)));
+    warp_noise.setAttribute("seed", String(1 + Math.floor(progress * 9)));
+    requestAnimationFrame(warp_frame);
+}
+
+function warp_start_now() {
+    warp_start = 0;
+    specimen.classList.add("is-warping");
+    requestAnimationFrame(warp_frame);
+}
+
+function type_step() {
+    const length = typed.textContent.length;
+    if (length >= type_text.length) {
+        clearInterval(type_timer);
+        type_timer = 0;
+        return;
+    }
+    typed.textContent = type_text.slice(0, length + 1);
+}
+
+function type_begin(text) {
+    console.assert(text.length <= TYPE_TEXT_MAX, text.length);
+    clearInterval(type_timer);
+    type_text = text;
+    typed.textContent = "";
+    type_timer = setInterval(type_step, TYPE_STEP_MS);
+}
+
+function on_stage_change(records) {
+    const state = state_current();
+    readout.textContent = READOUT[state];
+    for (const record of records) {
+        const was_error = (record.oldValue ?? "").split(" ").includes("is-error");
+        if (!was_error && stage.classList.contains("is-error")) {
+            warp_start_now();
+            break;
+        }
+    }
+    if (state === "info" && message.textContent !== type_text) type_begin(message.textContent);
+    if (state !== "info") type_text = "";
+    burn_render(false);
+}
+
+function on_message_change() {
+    if (state_current() === "info" && message.textContent !== type_text) type_begin(message.textContent);
+}
+
+new MutationObserver(on_stage_change).observe(stage, { attributes: true, attributeFilter: ["class"], attributeOldValue: true });
+new MutationObserver(on_message_change).observe(message, { childList: true, characterData: true, subtree: true });
+new MutationObserver(roster_render).observe(user_name, { childList: true, characterData: true, subtree: true });
+new MutationObserver(ticks_render).observe(session_name, { childList: true, characterData: true, subtree: true });
+field_password.addEventListener("input", () => burn_render(false));
+document.addEventListener("click", (event) => {
+    if (event.target.closest('[data-action="reveal"]') !== null) burn_render(true);
+});
+document.fonts.ready.then(() => {
+    roster_render();
+    requestAnimationFrame(() => cursor.classList.add("is-live"));
+});
+
+on_stage_change([]);
+roster_render();
+ticks_render();
+burn_render(true);
+</script>
+</body>
+</html>

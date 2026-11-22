@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · 49 Scope</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+@font-face {
+    font-family: "IBM Plex Mono";
+    src: url("assets/fonts/IBMPlexMono-Regular.otf") format("opentype");
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "IBM Plex Mono";
+    src: url("assets/fonts/IBMPlexMono-Medium.otf") format("opentype");
+    font-weight: 500;
+}
+
+.stage {
+    --beam: #2bff88;
+    --beam-core: #e2ffee;
+    --beam-width: 3px;
+    --text: #a6ffcf;
+    --dim: rgba(43, 255, 136, 0.48);
+    --faint: rgba(43, 255, 136, 0.2);
+    --glow: 0 0 10px rgba(43, 255, 136, 0.5);
+    --amber: #ffb53d;
+    --red: #ff5a36;
+    --cyan: #6fe3ff;
+    background:
+        radial-gradient(140% 90% at 50% 0%, #1b1f1e 0%, #111413 55%, #0b0d0c 100%);
+    color: var(--text);
+    font-family: "IBM Plex Mono", "Adwaita Mono", monospace;
+    font-feature-settings: "tnum" 1, "zero" 1;
+}
+
+.stage.is-error {
+    --beam: #ff5a36;
+    --beam-core: #ffe0d4;
+}
+
+.screen {
+    position: absolute;
+    left: 40px;
+    top: 32px;
+    width: 1840px;
+    height: 900px;
+    border-radius: 26px;
+    overflow: hidden;
+    background: radial-gradient(120% 110% at 50% 45%, #03100a 0%, #010603 55%, #000 100%);
+    box-shadow:
+        0 0 0 2px #050606,
+        0 0 0 3px #2a302d,
+        0 2px 0 3px #3a413e,
+        inset 0 0 0 1px rgba(43, 255, 136, 0.05),
+        inset 0 0 140px rgba(0, 0, 0, 0.95);
+}
+
+.phosphor {
+    position: absolute;
+    inset: 0;
+    transition: opacity 600ms ease;
+}
+
+.is-success .phosphor,
+.is-success .softkey .label {
+    opacity: 0;
+    transition: opacity 900ms ease 1300ms;
+}
+
+.topbar {
+    position: absolute;
+    left: 96px;
+    right: 48px;
+    top: 30px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 34px;
+    font-size: 19px;
+    letter-spacing: 0.04em;
+    text-shadow: var(--glow);
+}
+
+.channel {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 4px 14px 4px 4px;
+    border-radius: 4px;
+    color: var(--text);
+    transition: background 120ms;
+}
+
+.channel:hover { background: rgba(43, 255, 136, 0.08); }
+
+.channel .tag {
+    width: 54px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 3px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    border: 1.5px solid var(--beam);
+    box-shadow: 0 0 10px rgba(43, 255, 136, 0.45), inset 0 0 8px rgba(43, 255, 136, 0.25);
+    text-shadow: none;
+}
+
+.channel.one .tag { background: #2bff88; color: #021a0c; border-color: #2bff88; }
+.channel.two .tag { color: var(--beam); border-color: #2bff88; color: #2bff88; }
+.channel b { font-weight: 500; font-size: 22px; color: #d8ffe9; }
+.channel small { font-size: 15px; color: var(--dim); }
+
+.timebase { display: flex; gap: 26px; font-size: 16px; color: var(--dim); }
+.timebase b { font-weight: 400; color: var(--text); }
+
+.status {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 16px;
+}
+
+.capslock {
+    padding: 4px 10px;
+    border-radius: 3px;
+    border: 1.5px solid var(--amber);
+    color: var(--amber);
+    letter-spacing: 0.12em;
+    text-shadow: 0 0 8px rgba(255, 181, 61, 0.6);
+}
+
+.badge {
+    min-width: 124px;
+    padding: 5px 14px;
+    border-radius: 3px;
+    text-align: center;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    border: 1.5px solid currentColor;
+    color: var(--beam);
+    transition: color 150ms, background 150ms;
+}
+
+.badge span { display: none; }
+.is-idle .badge .b-idle,
+.is-busy .badge .b-busy,
+.is-error .badge .b-error,
+.is-info .badge .b-info,
+.is-success .badge .b-success { display: inline; }
+.is-busy .badge { background: #2bff88; color: #021a0c; text-shadow: none; animation: badge-blink 700ms steps(2, jump-none) infinite; }
+.is-error .badge { background: var(--red); border-color: var(--red); color: #1a0502; text-shadow: none; }
+.is-info .badge { color: var(--cyan); text-shadow: 0 0 8px rgba(111, 227, 255, 0.6); }
+.is-success .badge { background: #2bff88; color: #021a0c; text-shadow: none; }
+
+@keyframes badge-blink {
+    50% { background: transparent; color: var(--beam); }
+}
+
+.host { color: var(--dim); letter-spacing: 0.08em; }
+
+.scope {
+    position: absolute;
+    left: 96px;
+    top: 112px;
+    width: 860px;
+    height: 688px;
+}
+
+.scope svg { position: absolute; left: 0; top: 0; overflow: visible; }
+
+.grid line { stroke-width: 1; shape-rendering: crispEdges; }
+.grid .edge { stroke: rgba(43, 255, 136, 0.42); transition: stroke 200ms; }
+.grid .div { stroke: rgba(43, 255, 136, 0.2); stroke-dasharray: 1.5 7.1; }
+.grid .axis { stroke: rgba(43, 255, 136, 0.3); }
+.grid .tick { stroke: rgba(43, 255, 136, 0.42); }
+.is-error .grid .edge { stroke: rgba(255, 90, 54, 0.6); }
+
+.trace-outer,
+.trace-ghost {
+    fill: none;
+    stroke: var(--beam);
+    stroke-width: var(--beam-width);
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    transition: stroke 200ms;
+}
+
+.trace-core {
+    fill: none;
+    stroke: var(--beam-core);
+    stroke-width: 1.1px;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.trace-ghost { opacity: 0.22; }
+.spot { fill: var(--beam-core); }
+.spot-halo { fill: var(--beam); opacity: 0.85; }
+.spot-group { opacity: 0; }
+.spot-group.on { opacity: 1; }
+.spot-group.blink { animation: spot-blink 1s steps(2, jump-none) infinite; }
+
+@keyframes spot-blink {
+    50% { opacity: 0.15; }
+}
+
+.bus-line { fill: none; stroke: var(--dim); stroke-width: 1.5; }
+.bus-cell { fill: rgba(43, 255, 136, 0.08); stroke: #2bff88; stroke-width: 1.5; }
+.bus-text { fill: #d8ffe9; font: 500 15px "IBM Plex Mono", monospace; text-anchor: middle; }
+.bus-label { fill: var(--dim); font: 400 13px "IBM Plex Mono", monospace; letter-spacing: 0.12em; }
+.bus-label.end { text-anchor: end; }
+.is-error .bus-line { stroke: rgba(255, 90, 54, 0.5); }
+
+.marker {
+    position: absolute;
+    left: -46px;
+    height: 24px;
+    padding: 0 10px 0 7px;
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+    font-weight: 500;
+    clip-path: polygon(0 0, 72% 0, 100% 50%, 72% 100%, 0 100%);
+}
+
+.marker.ch1 { top: 332px; background: var(--beam); color: #021a0c; box-shadow: 0 0 10px var(--beam); transition: background 200ms; }
+.marker.bus { top: 482px; background: rgba(43, 255, 136, 0.45); color: #021a0c; }
+
+.trigger-mark {
+    position: absolute;
+    top: -26px;
+    left: 50px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--amber);
+    text-shadow: 0 0 8px rgba(255, 181, 61, 0.6);
+}
+
+.trigger-mark::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 19px;
+    border: 5px solid transparent;
+    border-top: 6px solid var(--amber);
+}
+
+.level-mark {
+    position: absolute;
+    right: -22px;
+    top: 299px;
+    border: 7px solid transparent;
+    border-right: 10px solid var(--amber);
+    filter: drop-shadow(0 0 4px rgba(255, 181, 61, 0.7));
+}
+
+.trace-label {
+    position: absolute;
+    right: 18px;
+    top: 394px;
+    font-size: 14px;
+    letter-spacing: 0.14em;
+    color: var(--dim);
+}
+
+form {
+    position: absolute;
+    inset: 0;
+    cursor: text;
+}
+
+form input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    color: transparent;
+    caret-color: transparent;
+    font-size: 1px;
+}
+
+form input::selection { background: transparent; }
+
+.nosignal {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 132px;
+    text-align: center;
+    font-size: 40px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    color: var(--red);
+    text-shadow: 0 0 14px rgba(255, 90, 54, 0.75), 0 0 36px rgba(255, 90, 54, 0.35);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.nosignal span { color: var(--amber); text-shadow: 0 0 14px rgba(255, 181, 61, 0.7); }
+.is-error .nosignal { opacity: 1; animation: nosignal-in 520ms steps(6, end); }
+
+@keyframes nosignal-in {
+    0%, 33%, 66% { opacity: 0.2; }
+    16%, 50%, 100% { opacity: 1; }
+}
+
+.readout {
+    position: absolute;
+    left: 18px;
+    bottom: 18px;
+    max-width: 824px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 18px 0 0;
+    border: 1.5px solid var(--tone);
+    border-radius: 3px;
+    background: rgba(0, 8, 4, 0.92);
+    font-size: 19px;
+    color: var(--tone);
+    text-shadow: var(--glow);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 160ms, transform 160ms;
+}
+
+.readout::before {
+    align-self: stretch;
+    display: grid;
+    place-items: center;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    background: var(--tone);
+    color: #010603;
+    text-shadow: none;
+}
+
+.readout .message { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.is-busy .readout,
+.is-error .readout,
+.is-info .readout,
+.is-success .readout { opacity: 1; transform: none; }
+.readout { --tone: #2bff88; }
+.is-busy .readout::before { content: "ACQ"; }
+.is-error .readout { --tone: var(--amber); text-shadow: 0 0 10px rgba(255, 181, 61, 0.5); }
+.is-error .readout::before { content: "ERR"; }
+.is-info .readout { --tone: var(--cyan); text-shadow: 0 0 10px rgba(111, 227, 255, 0.5); }
+.is-info .readout::before { content: "INFO"; }
+.is-success .readout::before { content: "RUN"; }
+
+.hint {
+    position: absolute;
+    left: 20px;
+    bottom: 28px;
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    color: var(--dim);
+    pointer-events: none;
+    transition: opacity 160ms;
+}
+
+.hint b { font-weight: 500; color: var(--text); }
+.stage:not(.is-idle) .hint { opacity: 0; }
+
+.side {
+    position: absolute;
+    left: 1036px;
+    top: 112px;
+    width: 756px;
+    height: 688px;
+}
+
+.side-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    letter-spacing: 0.16em;
+    color: var(--dim);
+}
+
+.side-head::after { content: ""; flex: 1; height: 1px; background: var(--faint); }
+.side-head b { font-weight: 500; color: var(--text); text-shadow: var(--glow); }
+
+.clock { position: absolute; left: 0; top: 54px; overflow: visible; }
+
+.glyph-outer {
+    fill: none;
+    stroke: #2bff88;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.glyph-core {
+    fill: none;
+    stroke: #e6fff0;
+    stroke-width: 0.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.seconds { position: absolute; left: 0; top: 352px; overflow: visible; }
+.seconds line { stroke: rgba(43, 255, 136, 0.45); stroke-width: 1.5; }
+.seconds line.major { stroke: rgba(43, 255, 136, 0.75); }
+.seconds text { fill: var(--dim); font: 400 13px "IBM Plex Mono", monospace; text-anchor: middle; }
+
+.date {
+    position: absolute;
+    left: 0;
+    top: 436px;
+    font-size: 26px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #d8ffe9;
+    text-shadow: var(--glow);
+}
+
+.greeting {
+    position: absolute;
+    left: 0;
+    top: 482px;
+    font-size: 17px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dim);
+}
+
+.greeting b { font-weight: 400; color: var(--text); }
+
+.measure {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--faint);
+}
+
+.measure div {
+    padding: 22px 0 0 20px;
+    border-left: 1px solid var(--faint);
+}
+
+.measure div:first-child { padding-left: 0; border-left: none; }
+.measure small { display: block; font-size: 13px; letter-spacing: 0.16em; color: var(--dim); }
+.measure b {
+    display: block;
+    margin-top: 8px;
+    font-size: 36px;
+    font-weight: 400;
+    color: #d8ffe9;
+    text-shadow: var(--glow);
+}
+.measure em { font-style: normal; font-size: 15px; color: var(--dim); margin-left: 6px; text-shadow: none; }
+
+.glass {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: 26px;
+    background:
+        linear-gradient(118deg, rgba(220, 255, 235, 0.06) 0%, rgba(220, 255, 235, 0.015) 30%, transparent 46%),
+        radial-gradient(130% 120% at 50% 50%, transparent 62%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+.reflection {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: var(--wallpaper-blur) center / cover no-repeat;
+    filter: grayscale(1) brightness(1.5) contrast(0.9);
+    transform: scaleX(-1);
+    opacity: 0.34;
+    mix-blend-mode: screen;
+    -webkit-mask-image: linear-gradient(240deg, #000 0%, rgba(0, 0, 0, 0.5) 30%, transparent 58%);
+    mask-image: linear-gradient(240deg, #000 0%, rgba(0, 0, 0, 0.5) 30%, transparent 58%);
+}
+
+.softkey {
+    position: absolute;
+    top: 862px;
+    width: 236px;
+    height: 132px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text);
+}
+
+.softkey .label {
+    width: 100%;
+    height: 52px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 16px;
+    border: 1.5px solid rgba(43, 255, 136, 0.5);
+    border-radius: 3px 3px 0 0;
+    border-bottom-width: 3px;
+    background: rgba(43, 255, 136, 0.05);
+    text-align: left;
+    text-shadow: var(--glow);
+    transition: background 120ms, border-color 120ms, opacity 600ms;
+}
+
+.softkey .label small { font-size: 12px; letter-spacing: 0.16em; color: var(--dim); text-shadow: none; }
+.softkey .label b { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 500; letter-spacing: 0.08em; color: #d8ffe9; }
+.softkey .label i[data-icon] { width: 18px; height: 18px; filter: drop-shadow(0 0 4px rgba(43, 255, 136, 0.7)); color: #2bff88; }
+.softkey:hover .label { background: rgba(43, 255, 136, 0.13); border-color: #2bff88; }
+.softkey.danger .label b { color: #ffd2b0; }
+.softkey.danger .label i[data-icon] { color: var(--amber); filter: drop-shadow(0 0 4px rgba(255, 181, 61, 0.7)); }
+
+.softkey .key {
+    width: 128px;
+    height: 34px;
+    border-radius: 7px;
+    background: linear-gradient(180deg, #3a403d 0%, #252a28 45%, #1b1f1d 100%);
+    box-shadow:
+        0 0 0 1px #070808,
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 3px 0 #0a0c0b,
+        0 6px 10px rgba(0, 0, 0, 0.55);
+    transition: transform 60ms, box-shadow 60ms;
+}
+
+.softkey:active .key {
+    transform: translateY(2px);
+    box-shadow: 0 0 0 1px #070808, inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 1px 0 #0a0c0b;
+}
+
+.decode-mode::after { content: "HIDDEN"; }
+.stage:has(input[type="text"]) .decode-mode::after { content: "ASCII"; }
+
+.bezel {
+    position: absolute;
+    left: 48px;
+    right: 48px;
+    bottom: 26px;
+    display: flex;
+    align-items: baseline;
+    gap: 22px;
+    font-family: "Adwaita Sans", sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    color: #6b726f;
+}
+
+.bezel b { font-weight: 700; letter-spacing: 0.32em; color: #a9b0ad; }
+.pilot {
+    position: absolute;
+    left: 640px;
+    top: 962px;
+    width: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    font-family: "Adwaita Sans", sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: #6b726f;
+}
+
+.lamp {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #2bff88;
+    box-shadow: 0 0 8px #2bff88;
+    align-self: center;
+}
+
+.is-error .lamp { background: var(--red); box-shadow: 0 0 8px var(--red); }
+.is-info .lamp { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+.is-busy .lamp { animation: badge-blink 500ms steps(2, jump-none) infinite; }
+</style>
+</head>
+<body>
+<div class="stage" data-stage>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <defs>
+            <filter id="beam-glow" filterUnits="userSpaceOnUse" x="-120" y="-700" width="1100" height="2100" color-interpolation-filters="sRGB">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="near"/>
+                <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="far"/>
+                <feMerge><feMergeNode in="far"/><feMergeNode in="far"/><feMergeNode in="near"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="clock-glow" filterUnits="userSpaceOnUse" x="-60" y="-60" width="900" height="400" color-interpolation-filters="sRGB">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="near"/>
+                <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="far"/>
+                <feMerge><feMergeNode in="far"/><feMergeNode in="near"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="spot-glow" x="-400%" y="-400%" width="900%" height="900%" color-interpolation-filters="sRGB">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="5"/>
+            </filter>
+            <clipPath id="trace-clip"><rect data-trace-clip x="-20" y="-700" width="900" height="2100"/></clipPath>
+        </defs>
+    </svg>
+
+    <div class="screen">
+        <div class="phosphor">
+            <div class="topbar">
+                <button type="button" class="channel one" data-action="switch-user" title="Switch user">
+                    <span class="tag">CH1</span><b data-user-name></b><small>USER</small>
+                </button>
+                <button type="button" class="channel two" data-action="session" title="Next session">
+                    <span class="tag">CH2</span><b data-session-name></b><small>SESSION</small>
+                </button>
+                <div class="timebase"><span>H <b>100ms</b>/div</span><span>T <b>&#8593; 0.40</b> div</span></div>
+                <div class="status">
+                    <span class="capslock" data-capslock>CAPS</span>
+                    <span class="badge"><span class="b-idle">READY</span><span class="b-busy">ACQ</span><span class="b-error">STOP</span><span class="b-info">INFO</span><span class="b-success">TRIG'D</span></span>
+                    <span class="host">seiren</span>
+                </div>
+            </div>
+
+            <div class="scope">
+                <svg class="grid" width="860" height="688" data-scope-grid></svg>
+                <svg width="860" height="688">
+                    <g data-decode></g>
+                    <path class="trace-ghost" data-trace-ghost d=""/>
+                    <g clip-path="url(#trace-clip)" filter="url(#beam-glow)">
+                        <path class="trace-outer" data-trace d=""/>
+                        <path class="trace-core" data-trace-core d=""/>
+                    </g>
+                    <g class="spot-group" data-spot>
+                        <circle class="spot-halo" r="7" filter="url(#spot-glow)"/>
+                        <circle class="spot" r="3.2"/>
+                    </g>
+                </svg>
+                <span class="marker ch1">1</span>
+                <span class="marker bus">B</span>
+                <span class="trigger-mark">T</span>
+                <span class="level-mark"></span>
+                <span class="trace-label">CH1 · PASSWORD</span>
+                <div class="nosignal">NO SIGNAL <span>· WRONG PASSWORD</span></div>
+                <form data-login>
+                    <input data-field="password" type="password" maxlength="1024" aria-label="Password" autocomplete="off" spellcheck="false">
+                </form>
+                <div class="hint">TYPE TO TRIGGER · <b>&#9166;</b> TO RUN</div>
+                <div class="readout"><span class="message" data-message></span></div>
+            </div>
+
+            <div class="side">
+                <div class="side-head"><b>CH3</b>TIME · X–Y</div>
+                <svg class="clock" width="756" height="270" data-clock-svg></svg>
+                <svg class="seconds" width="756" height="44" data-seconds></svg>
+                <div class="date" data-clock="long"></div>
+                <div class="greeting"><span data-clock="greeting"></span>, <b data-user-name></b></div>
+                <div class="measure">
+                    <div><small>LENGTH</small><b data-measure-length>0</b></div>
+                    <div><small>LIMIT</small><b>1024<em>B</em></b></div>
+                    <div><small>DAY</small><b data-clock="day-of-year"></b></div>
+                    <div><small>YEAR</small><b data-clock="year"></b></div>
+                </div>
+            </div>
+        </div>
+        <div class="reflection"></div>
+        <div class="glass"></div>
+    </div>
+
+    <button type="button" class="softkey" style="left: 136px" data-action="login">
+        <span class="label"><small>ACQUIRE</small><b>&#9166; LOG IN</b></span><span class="key"></span>
+    </button>
+    <button type="button" class="softkey" style="left: 388px" data-action="reveal" title="Show password">
+        <span class="label"><small>DECODE</small><b><i data-icon="view-visible"></i><span class="decode-mode"></span></b></span><span class="key"></span>
+    </button>
+    <button type="button" class="softkey" style="left: 1076px" data-power="suspend">
+        <span class="label"><small>SYSTEM</small><b><i data-icon="system-suspend"></i>SUSPEND</b></span><span class="key"></span>
+    </button>
+    <button type="button" class="softkey" style="left: 1336px" data-power="reboot">
+        <span class="label"><small>SYSTEM</small><b><i data-icon="system-reboot"></i>RESTART</b></span><span class="key"></span>
+    </button>
+    <button type="button" class="softkey danger" style="left: 1596px" data-power="shutdown">
+        <span class="label"><small>SYSTEM</small><b><i data-icon="system-shutdown"></i>POWER OFF</b></span><span class="key"></span>
+    </button>
+
+    <div class="pilot"><span class="lamp"></span>greetd</div>
+    <div class="bezel">
+        <b>LINTEL</b><span>VS-49 · VECTOR SCOPE · 4 CH · 1 GS/s</span>
+    </div>
+</div>
+<div class="demo-hint">password <b>lintel</b> · <b>Ctrl+Alt</b> + <b>↑↓</b> state · <b>←→</b> design · <b>W</b> wallpaper <span data-wallpaper-name></span> · <b>S</b> session · <b>U</b> user · <b>V</b> show password · <b>Z</b> sleep · <b>B</b> restart · <b>Q</b> power off · <a href="index.html">all</a></div>
+<script src="shared/icons.js"></script>
+<script src="shared/wallpapers.js"></script>
+<script src="shared/demo.js"></script>
+<script>
+const SCOPE_DIV = 86;
+const SCOPE_COLUMNS = 10;
+const SCOPE_ROWS = 8;
+const SCOPE_WIDTH = SCOPE_DIV * SCOPE_COLUMNS;
+const SCOPE_HEIGHT = SCOPE_DIV * SCOPE_ROWS;
+const SCOPE_TICKS = 5;
+const TRACE_BASE = SCOPE_HEIGHT / 2;
+const TRACE_START = 60;
+const TRACE_END = SCOPE_WIDTH - 60;
+const TRACE_STEP_MAX = 36;
+const TRACE_SAMPLE = 2;
+const TRACE_SAMPLES = SCOPE_WIDTH / TRACE_SAMPLE + 1;
+const PULSE_HEIGHT = 100;
+const PULSE_BEFORE = 24;
+const PULSE_AFTER = 40;
+const PULSE_OVERLAP_STEP = 14;
+const BUSY_PERIOD = 32;
+const BUSY_SPEED = 0.32;
+const SWEEP_MS = 1100;
+const ERROR_DROPOUT_MS = 320;
+const SUCCESS_DRAW_MS = 650;
+const SUCCESS_GROW_MS = 1000;
+const SUCCESS_CYCLES = 2.5;
+const DECODE_Y = TRACE_BASE + 150;
+const DECODE_CELL_MIN = 18;
+const SECRET_SIZE_MAX = 1024;
+const CLOCK_SCALE = 2.6;
+const CLOCK_DRAW_MS = 900;
+const CLOCK_PATH_LENGTH = 100;
+const CLOCK_DIGIT_WIDTH = 56;
+const CLOCK_COLON_WIDTH = 28;
+const CLOCK_GAP = 20;
+const SECONDS_WIDTH = 756;
+
+const GLYPHS = {
+    "0": "M28 3C12 3 5 22 5 48C5 74 12 93 28 93C44 93 51 74 51 48C51 22 44 3 28 3Z",
+    "1": "M15 20L31 4V93M15 93H47",
+    "2": "M7 24C8 11 17 3 28 3C41 3 50 12 50 25C50 41 36 52 7 93H51",
+    "3": "M8 14C13 7 20 3 28 3C41 3 49 11 49 23C49 36 40 45 26 45C42 45 51 55 51 69C51 84 41 93 27 93C17 93 9 89 5 81",
+    "4": "M39 93V4L4 65H53",
+    "5": "M47 4H13L9 44C15 39 22 37 29 37C43 37 51 48 51 64C51 81 41 93 27 93C17 93 9 89 5 81",
+    "6": "M46 12C41 6 35 3 29 3C13 3 5 21 5 52C5 79 14 93 28 93C42 93 51 82 51 66C51 50 42 40 28 40C16 40 7 47 5 59",
+    "7": "M5 4H51L21 93",
+    "8": "M28 45C15 45 9 37 9 24C9 11 17 3 28 3C39 3 47 11 47 24C47 37 41 45 28 45ZM28 45C13 45 5 55 5 69C5 84 15 93 28 93C41 93 51 84 51 69C51 55 43 45 28 45Z",
+    "9": "M51 44C49 53 40 58 28 58C14 58 5 47 5 31C5 14 15 3 28 3C43 3 51 17 51 44C51 75 42 93 26 93C18 93 12 90 8 84",
+    ":": "M14 30m-2.4 0a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0M14 68m-2.4 0a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0",
+};
+
+const scope_grid = document.querySelector("[data-scope-grid]");
+const trace_outer = document.querySelector("[data-trace]");
+const trace_core = document.querySelector("[data-trace-core]");
+const trace_ghost = document.querySelector("[data-trace-ghost]");
+const trace_clip = document.querySelector("[data-trace-clip]");
+const trace_spot = document.querySelector("[data-spot]");
+const decode_group = document.querySelector("[data-decode]");
+const clock_svg = document.querySelector("[data-clock-svg]");
+const seconds_svg = document.querySelector("[data-seconds]");
+const measure_length = document.querySelector("[data-measure-length]");
+console.assert(scope_grid && trace_outer && trace_core && trace_ghost && trace_clip && trace_spot);
+console.assert(decode_group && clock_svg && seconds_svg && measure_length);
+console.assert(Number(field_password.maxLength) === SECRET_SIZE_MAX);
+
+const trace_y = new Float32Array(TRACE_SAMPLES);
+let key_times = [];
+let decode_key = "";
+let state_current = "idle";
+let state_started = performance.now();
+let clock_key = "";
+let clock_drawn_at = -CLOCK_DRAW_MS;
+let seconds_spot = null;
+
+function grid_build() {
+    let lines = "";
+    for (let column = 0; column <= SCOPE_COLUMNS; column += 1) {
+        const x = column * SCOPE_DIV;
+        const kind = column === 0 || column === SCOPE_COLUMNS ? "edge" : column === SCOPE_COLUMNS / 2 ? "axis" : "div";
+        lines += `<line class="${kind}" x1="${x}" y1="0" x2="${x}" y2="${SCOPE_HEIGHT}"/>`;
+    }
+    for (let row = 0; row <= SCOPE_ROWS; row += 1) {
+        const y = row * SCOPE_DIV;
+        const kind = row === 0 || row === SCOPE_ROWS ? "edge" : row === SCOPE_ROWS / 2 ? "axis" : "div";
+        lines += `<line class="${kind}" x1="0" y1="${y}" x2="${SCOPE_WIDTH}" y2="${y}"/>`;
+    }
+    const tick = SCOPE_DIV / SCOPE_TICKS;
+    for (let index = 1; index < SCOPE_COLUMNS * SCOPE_TICKS; index += 1) {
+        if (index % SCOPE_TICKS === 0) continue;
+        const x = index * tick;
+        lines += `<line class="tick" x1="${x}" y1="${TRACE_BASE - 6}" x2="${x}" y2="${TRACE_BASE + 6}"/>`;
+        lines += `<line class="tick" x1="${x}" y1="0" x2="${x}" y2="6"/>`;
+        lines += `<line class="tick" x1="${x}" y1="${SCOPE_HEIGHT - 6}" x2="${x}" y2="${SCOPE_HEIGHT}"/>`;
+    }
+    for (let index = 1; index < SCOPE_ROWS * SCOPE_TICKS; index += 1) {
+        if (index % SCOPE_TICKS === 0) continue;
+        const y = index * tick;
+        lines += `<line class="tick" x1="${SCOPE_WIDTH / 2 - 6}" y1="${y}" x2="${SCOPE_WIDTH / 2 + 6}" y2="${y}"/>`;
+        lines += `<line class="tick" x1="0" y1="${y}" x2="6" y2="${y}"/>`;
+        lines += `<line class="tick" x1="${SCOPE_WIDTH - 6}" y1="${y}" x2="${SCOPE_WIDTH}" y2="${y}"/>`;
+    }
+    scope_grid.innerHTML = lines;
+}
+
+function seconds_build() {
+    let marks = "";
+    for (let second = 0; second <= 60; second += 1) {
+        const x = 1 + second * (SECONDS_WIDTH - 2) / 60;
+        const major = second % 5 === 0;
+        marks += `<line class="${major ? "major" : ""}" x1="${x}" y1="${major ? 0 : 6}" x2="${x}" y2="${major ? 16 : 10}"/>`;
+        if (second % 15 === 0) marks += `<text x="${x}" y="38">${String(second).padStart(2, "0")}</text>`;
+    }
+    marks += `<g data-second-spot><circle r="7" fill="#2bff88" opacity="0.9" filter="url(#spot-glow)"/><circle r="3" fill="#e2ffee"/></g>`;
+    seconds_svg.innerHTML = marks;
+    seconds_spot = seconds_svg.querySelector("[data-second-spot]");
+}
+
+function clock_draw() {
+    const now = new Date();
+    const text = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    if (text === clock_key) return;
+    const changed = [...text].map((glyph, index) => glyph !== clock_key[index]);
+    clock_key = text;
+    clock_drawn_at = performance.now();
+    let x = 0;
+    let markup = `<g filter="url(#clock-glow)">`;
+    for (let index = 0; index < text.length; index += 1) {
+        const glyph = text[index];
+        console.assert(glyph in GLYPHS, glyph);
+        const width = glyph === ":" ? CLOCK_COLON_WIDTH : CLOCK_DIGIT_WIDTH;
+        const dash = changed[index] ? `stroke-dasharray="${CLOCK_PATH_LENGTH} ${CLOCK_PATH_LENGTH}" stroke-dashoffset="${CLOCK_PATH_LENGTH}"` : "";
+        markup += `<g ${changed[index] ? "data-draw" : ""} transform="translate(${x} 8) scale(${CLOCK_SCALE})">`;
+        markup += `<path class="glyph-outer" pathLength="${CLOCK_PATH_LENGTH}" ${dash} d="${GLYPHS[glyph]}"/>`;
+        markup += `<path class="glyph-core" pathLength="${CLOCK_PATH_LENGTH}" ${dash} d="${GLYPHS[glyph]}"/></g>`;
+        x += width * CLOCK_SCALE + CLOCK_GAP;
+    }
+    clock_svg.innerHTML = `${markup}</g>`;
+}
+
+function clock_draw_step(now) {
+    const groups = clock_svg.querySelectorAll("[data-draw]");
+    if (groups.length === 0) return;
+    const progress = Math.min(1, (now - clock_drawn_at) / CLOCK_DRAW_MS);
+    console.assert(progress >= 0, progress);
+    const eased = 1 - (1 - progress) ** 3;
+    for (const group of groups) {
+        for (const path of group.querySelectorAll("path")) {
+            if (progress < 1) {
+                path.setAttribute("stroke-dashoffset", (CLOCK_PATH_LENGTH * (1 - eased)).toFixed(2));
+                continue;
+            }
+            path.removeAttribute("stroke-dasharray");
+            path.removeAttribute("stroke-dashoffset");
+        }
+        if (progress >= 1) group.removeAttribute("data-draw");
+    }
+}
+
+function state_read() {
+    for (const each of STATES) {
+        if (stage.classList.contains(`is-${each}`)) return each;
+    }
+    return "idle";
+}
+
+function on_stage_class(records) {
+    const now_state = state_read();
+    const entered = records.some((record) => !(record.oldValue ?? "").split(" ").includes(`is-${now_state}`));
+    if (!entered) return;
+    state_current = now_state;
+    state_started = performance.now();
+}
+
+function trace_step(count) {
+    if (count <= 1) return TRACE_STEP_MAX;
+    return Math.min(TRACE_STEP_MAX, (TRACE_END - TRACE_START) / count);
+}
+
+function pulse_shape(dx) {
+    return Math.exp(-((dx / 6) ** 2)) - 0.22 * Math.exp(-(((dx - 12) / 8) ** 2));
+}
+
+function pulse_amplitude(index) {
+    const hash = Math.sin(index * 12.9898 + 4.1) * 43758.5453;
+    return 0.78 + 0.32 * (hash - Math.floor(hash));
+}
+
+function pulse_ring(age) {
+    if (age > 900) return 1;
+    return 1 + 0.75 * Math.exp(-age / 150) * Math.cos(age / 40);
+}
+
+function noise(x, time) {
+    return 1.1 * Math.sin(x * 0.19 + time * 0.011) * Math.sin(x * 0.031 - time * 0.004) + (Math.random() - 0.5) * 1.3;
+}
+
+function key_sync(now) {
+    const length = field_password.value.length;
+    console.assert(length <= SECRET_SIZE_MAX, length);
+    if (length < key_times.length) key_times.length = length;
+    while (key_times.length < length) key_times.push(now);
+    measure_length.textContent = String(length);
+}
+
+function decode_sync() {
+    const count = field_password.value.length;
+    const shown = field_password.type === "text";
+    const key = `${count}|${shown}|${shown ? field_password.value : ""}`;
+    if (key === decode_key) return;
+    decode_key = key;
+    const y = DECODE_Y;
+    const step = trace_step(count);
+    let markup = `<text class="bus-label end" x="${SCOPE_WIDTH - 14}" y="${y - 24}">B1 · ASCII · ${shown ? "SHOWN" : "HIDDEN"}</text>`;
+    if (count === 0) {
+        markup += `<path class="bus-line" d="M0 ${y}H${SCOPE_WIDTH}"/>`;
+        decode_group.innerHTML = markup;
+        return;
+    }
+    const first = TRACE_START - step / 2 + 1.5;
+    const last = TRACE_START + (count - 1) * step + step / 2 - 1.5;
+    markup += `<path class="bus-line" d="M0 ${y}H${first}M${last} ${y}H${SCOPE_WIDTH}"/>`;
+    if (step < DECODE_CELL_MIN) {
+        markup += `<path class="bus-cell" d="${bus_cell(first, last, y)}"/>`;
+        markup += `<text class="bus-text" x="${(first + last) / 2}" y="${y + 5}">${count} BYTES</text>`;
+        decode_group.innerHTML = markup;
+        return;
+    }
+    const value = shown ? field_password.value : "";
+    for (let index = 0; index < count; index += 1) {
+        const center = TRACE_START + index * step;
+        markup += `<path class="bus-cell" d="${bus_cell(center - step / 2 + 1.5, center + step / 2 - 1.5, y)}"/>`;
+        const glyph = shown ? value[index].replace("&", "&amp;").replace("<", "&lt;") : "•";
+        markup += `<text class="bus-text" x="${center}" y="${y + 5}">${glyph}</text>`;
+    }
+    decode_group.innerHTML = markup;
+}
+
+function bus_cell(left, right, y) {
+    const half = 12;
+    const slope = Math.min(5, (right - left) / 4);
+    return `M${left} ${y}L${left + slope} ${y - half}H${right - slope}L${right} ${y}L${right - slope} ${y + half}H${left + slope}Z`;
+}
+
+function trace_idle(now) {
+    for (let sample = 0; sample < TRACE_SAMPLES; sample += 1) {
+        trace_y[sample] = TRACE_BASE + noise(sample * TRACE_SAMPLE, now);
+    }
+    const count = key_times.length;
+    const step = trace_step(count);
+    const overlap = Math.min(1, step / PULSE_OVERLAP_STEP);
+    for (let index = 0; index < count; index += 1) {
+        const center = TRACE_START + index * step;
+        const height = PULSE_HEIGHT * overlap * pulse_amplitude(index) * pulse_ring(now - key_times[index]);
+        const from = Math.max(0, Math.ceil((center - PULSE_BEFORE) / TRACE_SAMPLE));
+        const to = Math.min(TRACE_SAMPLES - 1, Math.floor((center + PULSE_AFTER) / TRACE_SAMPLE));
+        for (let sample = from; sample <= to; sample += 1) {
+            trace_y[sample] -= height * pulse_shape(sample * TRACE_SAMPLE - center);
+        }
+    }
+    return TRACE_START + count * step;
+}
+
+function trace_busy(now, age) {
+    const shift = age * BUSY_SPEED;
+    for (let sample = 0; sample < TRACE_SAMPLES; sample += 1) {
+        const x = sample * TRACE_SAMPLE;
+        const phase = (x + shift) % BUSY_PERIOD;
+        trace_y[sample] = TRACE_BASE + noise(x, now) - PULSE_HEIGHT * 0.85 * pulse_shape(phase - 10);
+    }
+    return (age % SWEEP_MS) / SWEEP_MS * SCOPE_WIDTH;
+}
+
+function trace_error(age) {
+    const dropout = Math.max(0, 1 - age / ERROR_DROPOUT_MS);
+    for (let sample = 0; sample < TRACE_SAMPLES; sample += 1) {
+        const x = sample * TRACE_SAMPLE;
+        trace_y[sample] = TRACE_BASE + dropout * dropout * ((Math.random() - 0.5) * 150 + Math.sin(x * 0.07 + age * 0.05) * 40);
+    }
+}
+
+function trace_success(age) {
+    const grow = Math.min(1, Math.max(0, age - SUCCESS_DRAW_MS) / SUCCESS_GROW_MS);
+    const amplitude = 86 + grow * grow * 460;
+    for (let sample = 0; sample < TRACE_SAMPLES; sample += 1) {
+        const x = sample * TRACE_SAMPLE;
+        trace_y[sample] = TRACE_BASE - amplitude * Math.sin(2 * Math.PI * SUCCESS_CYCLES * x / SCOPE_WIDTH);
+    }
+    stage.style.setProperty("--beam-width", `${3 + grow * 3}px`);
+    return Math.min(1, age / SUCCESS_DRAW_MS) * SCOPE_WIDTH;
+}
+
+function trace_path() {
+    let d = `M0 ${trace_y[0].toFixed(1)}`;
+    for (let sample = 1; sample < TRACE_SAMPLES; sample += 1) {
+        d += `L${sample * TRACE_SAMPLE} ${trace_y[sample].toFixed(1)}`;
+    }
+    return d;
+}
+
+function spot_place(x, mode) {
+    if (mode === "off") {
+        trace_spot.classList.remove("on", "blink");
+        return;
+    }
+    const sample = Math.max(0, Math.min(TRACE_SAMPLES - 1, Math.round(x / TRACE_SAMPLE)));
+    trace_spot.setAttribute("transform", `translate(${x.toFixed(1)} ${trace_y[sample].toFixed(1)})`);
+    trace_spot.classList.add("on");
+    trace_spot.classList.toggle("blink", mode === "blink");
+}
+
+function trace_frame() {
+    const now = performance.now();
+    key_sync(now);
+    decode_sync();
+    clock_draw_step(now);
+    const age = now - state_started;
+    let clip = SCOPE_WIDTH;
+    let ghost = false;
+    if (state_current !== "success") stage.style.removeProperty("--beam-width");
+    if (state_current === "busy") {
+        clip = trace_busy(now, age);
+        ghost = true;
+        spot_place(clip, "on");
+    } else if (state_current === "error") {
+        trace_error(age);
+        spot_place(0, "off");
+    } else if (state_current === "success") {
+        clip = trace_success(age);
+        spot_place(clip, clip < SCOPE_WIDTH ? "on" : "off");
+    } else {
+        const cursor = trace_idle(now);
+        spot_place(cursor, document.activeElement === field_password ? "blink" : "off");
+    }
+    const d = trace_path();
+    trace_outer.setAttribute("d", d);
+    trace_core.setAttribute("d", d);
+    trace_ghost.setAttribute("d", ghost ? d : "");
+    trace_clip.setAttribute("width", String(clip + 20));
+    if (seconds_spot !== null) {
+        const time = new Date();
+        const second = time.getSeconds() + time.getMilliseconds() / 1000;
+        seconds_spot.setAttribute("transform", `translate(${(1 + second * (SECONDS_WIDTH - 2) / 60).toFixed(1)} 8)`);
+    }
+    requestAnimationFrame(trace_frame);
+}
+
+new MutationObserver(on_stage_class).observe(stage, { attributes: true, attributeFilter: ["class"], attributeOldValue: true });
+state_current = state_read();
+grid_build();
+seconds_build();
+clock_draw();
+setInterval(clock_draw, 1000);
+requestAnimationFrame(trace_frame);
+</script>
+</body>
+</html>

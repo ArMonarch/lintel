@@ -1,0 +1,12 @@
+# build script output
+/target
+
+# `odin run build.odin -file` drops its own executable here
+/build
+/build.bin
+
+# nix build output
+/result
+
+# nix/serve.py request log
+/serve.log

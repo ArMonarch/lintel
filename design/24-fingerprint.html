@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · 24 Fingerprint</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+.stage {
+    --plum: #372546;
+    --violet: #8742cc;
+    --orchid: #a94a8c;
+    --ridge: #f7f0fa;
+    --muted: rgba(247, 240, 250, 0.64);
+    --faint: rgba(247, 240, 250, 0.18);
+    --pink: #ff7ac6;
+    --pink-soft: #f0b9e6;
+    --lavender: #d2bcff;
+    --red: #ff5d73;
+    --red-soft: rgba(255, 93, 115, 0.52);
+    --amber: #f5c26b;
+    --ease: cubic-bezier(0.55, 0, 0.2, 1);
+    color: var(--ridge);
+    background:
+        radial-gradient(1100px 760px at 0% 100%, rgba(135, 66, 204, 0.5), transparent 70%),
+        radial-gradient(1000px 720px at 100% 0%, rgba(169, 74, 140, 0.42), transparent 70%),
+        radial-gradient(ellipse 70% 70% at 50% 46%, rgba(31, 19, 42, 0.55), transparent 72%),
+        linear-gradient(rgba(55, 37, 70, 0.84), rgba(55, 37, 70, 0.84)),
+        var(--wallpaper-blur) center / cover no-repeat var(--plum);
+}
+
+.clock {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 68px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.clock .time {
+    font-size: 30px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    line-height: 1;
+    font-feature-settings: "tnum" 1;
+}
+
+.clock .date {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.glow {
+    position: absolute;
+    left: 610px;
+    top: 244px;
+    width: 700px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(169, 74, 140, 0.32), rgba(135, 66, 204, 0.12) 55%, transparent);
+    opacity: 0.8;
+    transition: opacity 500ms, background 500ms;
+    pointer-events: none;
+}
+
+.print {
+    position: absolute;
+    left: 800px;
+    top: 262px;
+    width: 320px;
+    height: 320px;
+    overflow: visible;
+    cursor: pointer;
+}
+
+.print svg { width: 100%; height: 100%; overflow: visible; display: block; }
+
+.ridge {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    d: var(--d-arc);
+    transition: opacity 380ms, stroke 300ms, d 700ms var(--ease);
+}
+
+.base .ridge { stroke: var(--ridge); }
+
+.fill .ridge {
+    --hidden: 1.05;
+    stroke: url(#print-fill);
+    stroke-dasharray: 1 2;
+    stroke-dashoffset: var(--hidden);
+}
+
+.halo {
+    fill: none;
+    stroke: var(--lavender);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-dasharray: 2 9;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: opacity 400ms;
+}
+
+.ripple {
+    fill: none;
+    stroke: var(--lavender);
+    stroke-width: 1;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.who {
+    position: absolute;
+    left: 360px;
+    right: 360px;
+    top: 630px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    column-gap: 72px;
+    transition: opacity 350ms;
+}
+
+.name {
+    font-size: 40px;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    line-height: 52px;
+}
+
+.side {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    color: var(--muted);
+    transition: color 150ms, background 150ms;
+}
+
+.side:hover { color: var(--ridge); background: rgba(247, 240, 250, 0.06); }
+.side.left { justify-self: end; align-items: flex-end; text-align: right; }
+.side.right { justify-self: start; align-items: flex-start; text-align: left; }
+
+.side small {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
+
+.side span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+}
+
+.side i[data-icon] { width: 20px; height: 20px; }
+
+form {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 706px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 350ms;
+}
+
+.line {
+    position: relative;
+    display: block;
+    width: 320px;
+    height: 42px;
+}
+
+.line::before,
+.line::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--faint);
+}
+
+.line::after {
+    height: 1.5px;
+    background: linear-gradient(90deg, var(--violet), var(--pink), var(--violet));
+    transform: scaleX(0);
+    transition: transform 400ms var(--ease), background 200ms;
+}
+
+.line:focus-within::after { transform: scaleX(1); }
+
+.line input {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: transparent;
+    caret-color: transparent;
+}
+
+.line input::placeholder {
+    color: var(--muted);
+    opacity: 0.8;
+    font-size: 15px;
+    letter-spacing: 0.4px;
+}
+
+.line input[type="text"] { color: var(--ridge); caret-color: var(--pink); }
+.line input[type="text"] + .dots { display: none; }
+
+.dots {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    pointer-events: none;
+}
+
+.dot {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ridge);
+    animation: dot-in 220ms var(--ease);
+}
+
+.caret {
+    flex: none;
+    width: 2px;
+    height: 20px;
+    margin-left: 4px;
+    border-radius: 1px;
+    background: var(--pink);
+    animation: blink 1100ms steps(1) infinite;
+}
+
+.reveal {
+    position: absolute;
+    right: -44px;
+    top: 7px;
+    display: inline-flex;
+    padding: 4px;
+    border-radius: 8px;
+    color: var(--muted);
+    opacity: 0.9;
+}
+
+.reveal:hover { color: var(--ridge); opacity: 1; }
+.reveal i[data-icon] { width: 20px; height: 20px; }
+
+.notes {
+    margin-top: 22px;
+    min-height: 58px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.message {
+    font-size: 17px;
+    letter-spacing: 0.2px;
+    color: var(--muted);
+    transition: color 200ms;
+}
+
+.capslock {
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(245, 194, 107, 0.5);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+}
+
+.launch {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 604px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 300ms;
+}
+
+.launch small {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    line-height: 16px;
+    text-transform: uppercase;
+    color: var(--lavender);
+}
+
+.launch .window { overflow: hidden; padding: 0 8px 10px; }
+
+.launch .session {
+    display: block;
+    font-size: 48px;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    line-height: 52px;
+    transform: translateY(0);
+}
+
+.power {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 60px;
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+    transition: opacity 350ms;
+}
+
+.power button {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid rgba(247, 240, 250, 0.2);
+    color: var(--muted);
+    transition: color 150ms, border-color 150ms, background 150ms;
+}
+
+.power button:hover {
+    color: var(--ridge);
+    border-color: rgba(255, 122, 198, 0.55);
+    background: rgba(255, 122, 198, 0.08);
+}
+
+.power i[data-icon] { width: 24px; height: 24px; }
+
+.is-busy .fill .ridge {
+    stroke-dashoffset: 0;
+    animation: fill-in 400ms var(--ease) calc(var(--i) * 20ms) both;
+}
+
+.is-busy .glow {
+    opacity: 1;
+    background: radial-gradient(closest-side, rgba(255, 122, 198, 0.34), rgba(135, 66, 204, 0.18) 55%, transparent);
+    animation: breathe 1800ms ease-in-out 900ms infinite;
+}
+
+.is-busy .message { color: var(--pink-soft); }
+
+.is-error .base .ridge { stroke: var(--red-soft); }
+
+.is-error .fill .ridge {
+    stroke: var(--red);
+    stroke-dashoffset: var(--hidden);
+    animation: drain 420ms var(--ease) calc((var(--n) - 1 - var(--i)) * 26ms) both;
+}
+
+.is-error .glow { background: radial-gradient(closest-side, rgba(255, 93, 115, 0.22), rgba(135, 66, 204, 0.1) 55%, transparent); }
+.is-error .line::before { background: var(--red); }
+.is-error .line::after { background: var(--red); }
+.is-error .line { animation: shake 360ms ease-in-out; }
+.is-error .message { color: #ff8193; font-weight: 500; }
+
+.is-info .base .ridge {
+    stroke: var(--lavender);
+    opacity: 0.6;
+    animation: pulse 1800ms ease-in-out calc(var(--r) * 90ms) infinite;
+}
+
+.is-info .halo { opacity: 0.55; animation: spin 24s linear infinite; }
+.is-info .ripple { animation: ripple 2400ms ease-out infinite; }
+.is-info .ripple.late { animation-delay: 1200ms; }
+.is-info .message { color: var(--lavender); }
+
+.is-success .ridge:not(.morph) { opacity: 0; }
+.is-success .morph { d: var(--d-line); }
+.is-success .base .morph { stroke: rgba(247, 240, 250, 0.2); transition-delay: 0s, 600ms, 0s; }
+
+.is-success .fill .morph {
+    stroke-dashoffset: 0;
+    animation: fill-in 1500ms cubic-bezier(0.4, 0, 0.2, 1) 700ms both;
+}
+
+.is-success .glow { opacity: 0.35; }
+.is-success .who,
+.is-success form,
+.is-success .power { opacity: 0; pointer-events: none; }
+.is-success .launch { opacity: 1; transition-delay: 600ms; }
+.is-success .launch .session { animation: rise 600ms var(--ease) 800ms both; }
+
+@keyframes fill-in {
+    from { stroke-dashoffset: var(--hidden); }
+    to { stroke-dashoffset: 0; }
+}
+
+@keyframes drain {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: var(--hidden); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 1; }
+}
+
+@keyframes breathe {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(0.94); }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes ripple {
+    from { transform: scale(0.92); opacity: 0.5; }
+    to { transform: scale(1.14); opacity: 0; }
+}
+
+@keyframes rise {
+    from { transform: translateY(110%); }
+    to { transform: translateY(0); }
+}
+
+@keyframes dot-in {
+    from { transform: scale(0); background: var(--pink); }
+    to { transform: scale(1); }
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+}
+</style>
+</head>
+<body>
+<div class="stage" data-stage>
+    <div class="clock">
+        <span class="time" data-clock="time"></span>
+        <span class="date" data-clock="long"></span>
+    </div>
+
+    <div class="glow"></div>
+
+    <div class="print" title="Touch the reader">
+        <svg viewBox="0 0 320 320" aria-hidden="true">
+            <defs>
+                <linearGradient id="print-fill" gradientUnits="userSpaceOnUse" x1="20" y1="330" x2="300" y2="20">
+                    <stop offset="0" stop-color="#ff7ac6"/>
+                    <stop offset="0.55" stop-color="#c77dff"/>
+                    <stop offset="1" stop-color="#8f5bff"/>
+                </linearGradient>
+            </defs>
+            <circle class="ripple" cx="163" cy="163" r="175"/>
+            <circle class="ripple late" cx="163" cy="163" r="175"/>
+            <circle class="halo" cx="163" cy="163" r="175"/>
+            <g class="base" data-print-layer></g>
+            <g class="fill" data-print-layer></g>
+        </svg>
+    </div>
+
+    <div class="who">
+        <button class="side left" data-action="session" title="Next session">
+            <small>Session</small>
+            <span data-session-name></span>
+        </button>
+        <div class="name" data-user-name></div>
+        <button class="side right" data-action="switch-user" title="Switch user">
+            <small>User</small>
+            <span>Switch<i data-icon="system-switch-user"></i></span>
+        </button>
+    </div>
+
+    <form data-login>
+        <label class="line">
+            <input data-field="password" type="password" placeholder="or type your password" aria-label="Password" autocomplete="off">
+            <span class="dots" data-print-dots></span>
+            <button type="button" class="reveal" data-action="reveal" title="Show password"><i data-icon="view-visible"></i></button>
+        </label>
+        <div class="notes">
+            <span class="message" data-message></span>
+            <span class="capslock" data-capslock>Caps Lock is on</span>
+        </div>
+    </form>
+
+    <div class="launch">
+        <small>Starting</small>
+        <div class="window"><span class="session" data-session-name></span></div>
+    </div>
+
+    <div class="power">
+        <button data-power="suspend" title="Sleep"><i data-icon="system-suspend"></i></button>
+        <button data-power="reboot" title="Restart"><i data-icon="system-reboot"></i></button>
+        <button data-power="shutdown" title="Power off"><i data-icon="system-shutdown"></i></button>
+    </div>
+</div>
+<div class="demo-hint">password <b>lintel</b> · <b>Ctrl+Alt</b> + <b>↑↓</b> state · <b>←→</b> design · <b>W</b> wallpaper <span data-wallpaper-name></span> · <b>S</b> session · <b>U</b> user · <b>V</b> show password · <b>Z</b> sleep · <b>B</b> restart · <b>Q</b> power off · <a href="index.html">all</a></div>
+<script src="shared/icons.js"></script>
+<script src="shared/wallpapers.js"></script>
+<script src="shared/demo.js"></script>
+<script>
+const PRINT_RIDGES = 10;
+const PRINT_SAMPLES = 9;
+const PRINT_GAP_PX = 13;
+const PRINT_DOTS_MAX = 18;
+const PRINT_LINE_Y = 328;
+const PRINT_LINE_HALF = 160;
+const PRINT_GAPS = [
+    [],
+    [],
+    [0.64],
+    [0.28],
+    [0.72],
+    [0.44, 0.83],
+    [0.18, 0.6],
+    [0.36, 0.78],
+    [0.14, 0.56],
+    [0.62],
+];
+
+function print_point(ridge, degrees) {
+    const theta = degrees * Math.PI / 180;
+    const radius = (14 + ridge * 15) * (1 + 0.024 * Math.sin(2 * theta + ridge * 0.9));
+    const cx = 160 + (ridge - 5) * 0.7;
+    const cy = 188 - ridge * 0.6;
+    return [cx + radius * 0.84 * Math.sin(theta), cy - radius * Math.cos(theta)];
+}
+
+function print_path(points) {
+    console.assert(points.length === PRINT_SAMPLES, points.length);
+    const at = (k) => points[Math.max(0, Math.min(points.length - 1, k))];
+    const f = (v) => v.toFixed(1);
+    let d = `M ${f(points[0][0])} ${f(points[0][1])}`;
+    for (let k = 0; k < points.length - 1; k += 1) {
+        const p0 = at(k - 1);
+        const p1 = at(k);
+        const p2 = at(k + 1);
+        const p3 = at(k + 2);
+        const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+        const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+        d += ` C ${f(c1[0])} ${f(c1[1])} ${f(c2[0])} ${f(c2[1])} ${f(p2[0])} ${f(p2[1])}`;
+    }
+    return d;
+}
+
+function print_segments() {
+    console.assert(PRINT_GAPS.length === PRINT_RIDGES);
+    const segments = [];
+    for (let ridge = 0; ridge < PRINT_RIDGES; ridge += 1) {
+        const open = 30 + ridge * 6.2 + 10 * Math.sin(ridge * 2.3);
+        const lean = 187 + 6 * Math.cos(ridge * 1.9);
+        const start = lean - 360 + open / 2;
+        const end = lean - open / 2;
+        const radius = 14 + ridge * 15;
+        const gap = (PRINT_GAP_PX / radius) * 180 / Math.PI;
+        const cuts = [start];
+        for (const fraction of PRINT_GAPS[ridge]) {
+            const middle = start + (end - start) * fraction;
+            cuts.push(middle - gap / 2, middle + gap / 2);
+        }
+        cuts.push(end);
+        for (let k = 0; k < cuts.length; k += 2) {
+            const a = cuts[k];
+            const b = cuts[k + 1];
+            console.assert(b > a, ridge, a, b);
+            const points = [];
+            for (let s = 0; s < PRINT_SAMPLES; s += 1) {
+                points.push(print_point(ridge, a + (b - a) * s / (PRINT_SAMPLES - 1)));
+            }
+            segments.push({ ridge, length: (b - a) * Math.PI / 180 * radius, d: print_path(points) });
+        }
+    }
+    return segments;
+}
+
+function print_line() {
+    const points = [];
+    for (let s = 0; s < PRINT_SAMPLES; s += 1) {
+        points.push([160 - PRINT_LINE_HALF + 2 * PRINT_LINE_HALF * s / (PRINT_SAMPLES - 1), PRINT_LINE_Y]);
+    }
+    return print_path(points);
+}
+
+function print_build() {
+    const segments = print_segments();
+    let morph = 0;
+    for (let k = 0; k < segments.length; k += 1) {
+        if (segments[k].ridge >= 6 && segments[k].length > segments[morph].length) morph = k;
+    }
+    const line = print_line();
+    for (const layer of document.querySelectorAll("[data-print-layer]")) {
+        for (let k = 0; k < segments.length; k += 1) {
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("class", k === morph ? "ridge morph" : "ridge");
+            path.setAttribute("d", segments[k].d);
+            path.setAttribute("pathLength", "1");
+            path.style.setProperty("--d-arc", `path("${segments[k].d}")`);
+            path.style.setProperty("--d-line", `path("${line}")`);
+            path.style.setProperty("--i", String(k));
+            path.style.setProperty("--n", String(segments.length));
+            path.style.setProperty("--r", String(segments[k].ridge));
+            layer.appendChild(path);
+        }
+    }
+}
+
+const print_dots = document.querySelector("[data-print-dots]");
+
+function print_dots_render() {
+    const count = Math.min(field_password.value.length, PRINT_DOTS_MAX);
+    const caret = print_dots.querySelector(".caret");
+    if (caret !== null) caret.remove();
+    while (print_dots.childElementCount > count) print_dots.lastElementChild.remove();
+    while (print_dots.childElementCount < count) {
+        const dot = document.createElement("span");
+        dot.className = "dot";
+        print_dots.appendChild(dot);
+    }
+    if (count > 0 && document.activeElement === field_password) {
+        const bar = document.createElement("span");
+        bar.className = "caret";
+        print_dots.appendChild(bar);
+    }
+}
+
+print_build();
+field_password.addEventListener("input", print_dots_render);
+field_password.addEventListener("focus", print_dots_render);
+field_password.addEventListener("blur", print_dots_render);
+new MutationObserver(print_dots_render).observe(stage, { attributes: true, attributeFilter: ["class"] });
+document.querySelector(".print").addEventListener("click", () => field_password.focus());
+print_dots_render();
+</script>
+</body>
+</html>

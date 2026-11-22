@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · 27 Acid</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+@font-face {
+    font-family: "Archivo Black";
+    src: url("assets/fonts/ArchivoBlack-Regular.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Space Mono";
+    src: url("assets/fonts/SpaceMono-Regular.ttf") format("truetype");
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "Space Mono";
+    src: url("assets/fonts/SpaceMono-Bold.ttf") format("truetype");
+    font-weight: 700;
+}
+
+.stage {
+    --paper: #f5f2e8;
+    --ink: #000;
+    --acid: #e9ff00;
+    --muted: rgba(0, 0, 0, 0.55);
+    --dot: rgba(0, 0, 0, 0.13);
+    --scrim: rgba(245, 242, 232, 0.88);
+    --display: "Archivo Black", "Adwaita Sans", sans-serif;
+    --mono: "Space Mono", "Adwaita Mono", monospace;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--mono);
+    transition: background 300ms, color 300ms;
+}
+
+.stage.is-ink {
+    --paper: #11110f;
+    --ink: #f5f2e8;
+    --muted: rgba(245, 242, 232, 0.55);
+    --dot: rgba(245, 242, 232, 0.12);
+    --scrim: rgba(17, 17, 15, 0.86);
+}
+
+.wall {
+    position: absolute;
+    inset: 0;
+    background: var(--wallpaper) center / cover no-repeat;
+    filter: grayscale(1) contrast(1.15);
+}
+
+.scrim {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle, var(--dot) 1.4px, transparent 1.8px) 0 0 / 32px 32px,
+        var(--scrim);
+    transition: background 300ms;
+}
+
+.band {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    padding: 0 120px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.band .spacer { flex: 1; }
+.band b { font-weight: 700; }
+
+.theme {
+    height: 32px;
+    padding: 0 14px;
+    border: 2px solid var(--paper);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.theme:hover { background: var(--acid); color: #000; border-color: var(--acid); }
+
+.tab {
+    display: inline-flex;
+    align-items: center;
+    height: 34px;
+    padding: 0 14px;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.left {
+    position: absolute;
+    left: 120px;
+    top: 120px;
+    width: 960px;
+}
+
+.host {
+    margin-top: 18px;
+    font-family: var(--display);
+    font-size: 200px;
+    line-height: 0.82;
+    letter-spacing: -0.04em;
+    color: transparent;
+    -webkit-text-stroke: 4px var(--ink);
+}
+
+.time {
+    margin-top: 58px;
+    font-family: var(--display);
+    font-size: 264px;
+    line-height: 0.78;
+    letter-spacing: -0.035em;
+}
+
+.date {
+    margin-top: 46px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 22px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.date .mark {
+    padding: 4px 12px;
+    border: 2px solid #000;
+    background: var(--acid);
+    color: #000;
+    font-weight: 700;
+}
+
+.date .day { color: var(--muted); }
+
+.power {
+    position: absolute;
+    left: 120px;
+    bottom: 76px;
+}
+
+.power .row {
+    margin-top: 18px;
+    display: flex;
+    gap: 22px;
+}
+
+.power button {
+    width: 88px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.power .key {
+    width: 88px;
+    height: 88px;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    box-shadow: 6px 6px 0 var(--ink);
+    transition: transform 80ms, box-shadow 80ms, background 80ms;
+}
+
+.power i[data-icon] { width: 36px; height: 36px; }
+.power button:hover .key { background: var(--acid); color: #000; }
+.power button:active .key { transform: translate(6px, 6px); box-shadow: 0 0 0 var(--ink); }
+
+.right {
+    position: absolute;
+    left: 1240px;
+    top: 120px;
+    width: 560px;
+}
+
+.session {
+    display: flex;
+    width: 100%;
+    height: 76px;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    box-shadow: 6px 6px 0 var(--ink);
+    text-align: left;
+    transition: transform 80ms, box-shadow 80ms;
+}
+
+.session:active { transform: translate(6px, 6px); box-shadow: 0 0 0 var(--ink); }
+
+.session .value {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 22px;
+}
+
+.session .value small {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.session .value b {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 30px;
+    line-height: 1.05;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.session .open {
+    width: 76px;
+    display: grid;
+    place-items: center;
+    border-left: 2px solid var(--ink);
+}
+
+.session .open::before {
+    content: "";
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    border-right: 4px solid var(--ink);
+    border-bottom: 4px solid var(--ink);
+    transform: rotate(45deg);
+}
+
+.session:hover .open { background: var(--acid); }
+.session:hover .open::before { border-color: #000; }
+
+.dock {
+    position: relative;
+    margin-top: 92px;
+}
+
+.card {
+    position: relative;
+    z-index: 2;
+    padding: 38px 40px 30px;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    box-shadow: 6px 6px 0 var(--ink);
+    transition: background 300ms;
+}
+
+.card > .tab {
+    position: absolute;
+    left: -2px;
+    top: -36px;
+}
+
+.label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 26px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.capslock {
+    padding: 2px 8px;
+    border: 2px solid #000;
+    background: var(--acid);
+    color: #000;
+    font-size: 12px;
+}
+
+.who {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    text-align: left;
+}
+
+.initial {
+    width: 76px;
+    height: 76px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--display);
+    font-size: 44px;
+}
+
+.who .name {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--display);
+    font-size: 50px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.who .swap {
+    width: 48px;
+    height: 48px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--ink);
+    transition: background 80ms;
+}
+
+.who .swap i[data-icon] { width: 24px; height: 24px; }
+.who:hover .swap { background: var(--acid); color: #000; border-color: #000; }
+
+.rule {
+    height: 2px;
+    margin: 28px -40px 24px;
+    background: var(--ink);
+}
+
+.field {
+    margin-top: 12px;
+    display: flex;
+    height: 76px;
+    border: 4px solid var(--ink);
+    background: var(--paper);
+    box-shadow: 6px 6px 0 var(--ink);
+    transition: transform 90ms, box-shadow 90ms;
+}
+
+.field:focus-within { transform: translate(3px, 3px); box-shadow: 3px 3px 0 var(--ink); }
+
+.field input {
+    flex: 1;
+    min-width: 0;
+    padding: 0 20px;
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    caret-color: var(--ink);
+}
+
+.field input::placeholder { font-size: 18px; letter-spacing: 0.06em; font-weight: 400; }
+
+.reveal {
+    width: 68px;
+    display: grid;
+    place-items: center;
+    border-left: 4px solid var(--ink);
+}
+
+.reveal i[data-icon] { width: 26px; height: 26px; }
+.reveal:hover { background: var(--acid); color: #000; }
+
+.login {
+    position: relative;
+    width: 100%;
+    height: 80px;
+    margin-top: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 26px;
+    border: 4px solid #000;
+    background: var(--acid);
+    color: #000;
+    box-shadow: 6px 6px 0 var(--ink);
+    font-family: var(--display);
+    font-size: 30px;
+    letter-spacing: -0.01em;
+    overflow: hidden;
+    transition: transform 80ms, box-shadow 80ms;
+}
+
+.login:active { transform: translate(6px, 6px); box-shadow: 0 0 0 var(--ink); }
+
+.login .arrow {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 34px;
+}
+
+.login .wait { display: none; }
+
+.notes {
+    min-height: 30px;
+    margin-top: 22px;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.notes .message:not(:empty)::before { content: "→ "; font-weight: 700; }
+.notes .message:empty::before { content: "press enter to log in"; color: var(--muted); }
+
+.verdict {
+    position: absolute;
+    z-index: 3;
+    right: -30px;
+    top: -30px;
+    padding: 10px 18px 8px;
+    border: 3px solid #000;
+    background: var(--acid);
+    color: #000;
+    box-shadow: 6px 6px 0 var(--ink);
+    font-family: var(--display);
+    font-size: 32px;
+    letter-spacing: -0.01em;
+    transform: rotate(4deg) scale(0);
+    transform-origin: 70% 60%;
+    pointer-events: none;
+}
+
+.notice {
+    position: absolute;
+    z-index: 1;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 26px 28px 24px;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    box-shadow: 6px 6px 0 var(--ink);
+    transform: translateY(0);
+    visibility: hidden;
+    transition: transform 360ms cubic-bezier(0.2, 0.9, 0.3, 1.25), visibility 0s 360ms;
+}
+
+.notice > .tab {
+    position: absolute;
+    left: -2px;
+    bottom: -36px;
+}
+
+.notice .glyph {
+    width: 56px;
+    height: 56px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 2px solid #000;
+    background: var(--acid);
+    color: #000;
+    font-family: var(--display);
+    font-size: 36px;
+    line-height: 1;
+}
+
+.notice .glyph svg { width: 34px; height: 34px; }
+.notice .glyph b { display: none; font-weight: 400; }
+.notice.is-plain svg { display: none; }
+.notice.is-plain b { display: block; }
+
+.notice p {
+    font-family: var(--display);
+    font-size: 26px;
+    line-height: 1.15;
+}
+
+.flood {
+    position: absolute;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 120px 120px;
+    border: 4px solid #000;
+    background: var(--acid);
+    color: #000;
+    overflow: hidden;
+    transition: left 520ms cubic-bezier(0.7, 0, 0.2, 1), top 520ms cubic-bezier(0.7, 0, 0.2, 1),
+        width 520ms cubic-bezier(0.7, 0, 0.2, 1), height 520ms cubic-bezier(0.7, 0, 0.2, 1);
+}
+
+.flood .big {
+    position: absolute;
+    right: 110px;
+    top: 60px;
+    font-family: var(--display);
+    font-size: 340px;
+    line-height: 1;
+}
+
+.flood .tab { align-self: flex-start; background: #000; color: var(--acid); }
+
+.flood p {
+    margin-top: 26px;
+    font-family: var(--display);
+    max-width: 1500px;
+    font-size: 150px;
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+}
+
+.flood .big,
+.flood .tab,
+.flood p {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 200ms 0ms, transform 200ms 0ms;
+}
+
+.flood.is-open .big,
+.flood.is-open .tab,
+.flood.is-open p {
+    opacity: 1;
+    transform: none;
+    transition: opacity 260ms 420ms, transform 260ms 420ms;
+}
+
+.is-busy .card { animation: strobe 300ms infinite; }
+.is-busy .login .go { display: none; }
+.is-busy .login .wait { display: inline; }
+.is-busy .login::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 10px;
+    border-top: 3px solid #000;
+    background: repeating-linear-gradient(-45deg, #000 0 8px, var(--acid) 8px 16px);
+    background-size: 22.6px 22.6px;
+    animation: hatch 400ms linear infinite;
+}
+.is-busy .notes { color: var(--muted); }
+.is-busy .card > .tab { background: var(--acid); color: #000; box-shadow: inset 0 0 0 2px #000; }
+
+.is-error .card {
+    transform: translate(-12px, -12px);
+    box-shadow: 18px 18px 0 var(--ink);
+    animation: jump 420ms cubic-bezier(0.3, 0, 0.2, 1);
+}
+.is-error .verdict { transform: rotate(4deg) scale(1); animation: slap 320ms cubic-bezier(0.2, 1.6, 0.4, 1); }
+.is-error .notes { font-weight: 700; }
+.is-error .field { animation: shake 360ms ease-in-out 120ms; }
+
+.is-info .notice {
+    transform: translateY(calc(100% + 28px));
+    visibility: visible;
+    transition: transform 420ms cubic-bezier(0.2, 0.9, 0.3, 1.25), visibility 0s;
+}
+.is-info .notes .message { visibility: hidden; }
+
+.is-success .notes .message { visibility: hidden; }
+
+@keyframes strobe {
+    0%, 49% { transform: translate(0, 0); box-shadow: 6px 6px 0 var(--ink); }
+    50%, 100% { transform: translate(6px, 6px); box-shadow: 0 0 0 var(--ink); }
+}
+
+@keyframes jump {
+    0% { transform: translate(0, 0); box-shadow: 6px 6px 0 var(--ink); }
+    35% { transform: translate(-22px, -26px); box-shadow: 28px 32px 0 var(--ink); }
+    60% { transform: translate(-8px, -9px); box-shadow: 14px 15px 0 var(--ink); }
+    100% { transform: translate(-12px, -12px); box-shadow: 18px 18px 0 var(--ink); }
+}
+
+@keyframes slap {
+    0% { transform: rotate(-14deg) scale(1.8); }
+    100% { transform: rotate(4deg) scale(1); }
+}
+
+@keyframes hatch {
+    to { background-position: 22.6px 0; }
+}
+</style>
+</head>
+<body>
+<div class="stage" data-stage>
+    <div class="wall"></div>
+    <div class="scrim"></div>
+
+    <div class="band">
+        <b>lintel</b>
+        <span>greetd / tty1</span>
+        <span class="spacer"></span>
+        <span data-clock="greeting"></span>
+        <button class="theme" data-action="theme" title="Paper / ink">theme: <span data-theme-name>Ink</span></button>
+    </div>
+
+    <div class="left">
+        <span class="tab">/ host</span>
+        <div class="host">seiren</div>
+        <div class="time" data-clock="time"></div>
+        <div class="date">
+            <span class="mark" data-clock="weekday"></span>
+            <span data-clock="day-month-year"></span>
+            <span class="day">· day <span data-clock="day-of-year"></span></span>
+        </div>
+    </div>
+
+    <div class="power">
+        <span class="tab">/ power</span>
+        <div class="row">
+            <button data-power="suspend" title="Sleep"><span class="key"><i data-icon="system-suspend"></i></span>Sleep</button>
+            <button data-power="reboot" title="Restart"><span class="key"><i data-icon="system-reboot"></i></span>Restart</button>
+            <button data-power="shutdown" title="Power off"><span class="key"><i data-icon="system-shutdown"></i></span>Off</button>
+        </div>
+    </div>
+
+    <div class="right">
+        <span class="tab">/ session</span>
+        <button class="session" data-action="session" title="Next session">
+            <span class="value"><small>start</small><b data-session-name></b></span>
+            <span class="open"></span>
+        </button>
+
+        <div class="dock">
+            <form class="card" data-login>
+                <span class="tab">/ login</span>
+                <div class="label"><span>user</span></div>
+                <button type="button" class="who" data-action="switch-user" title="Switch user">
+                    <span class="initial" data-user-initial></span>
+                    <span class="name" data-user-name></span>
+                    <span class="swap"><i data-icon="system-switch-user"></i></span>
+                </button>
+                <div class="rule"></div>
+                <div class="label"><span>password</span><span class="capslock" data-capslock>caps lock</span></div>
+                <label class="field">
+                    <input data-field="password" type="password" placeholder="type it here" aria-label="Password">
+                    <button type="button" class="reveal" data-action="reveal" title="Show password"><i data-icon="view-visible"></i></button>
+                </label>
+                <button class="login" type="submit">
+                    <span class="go">Log in</span><span class="wait">Checking</span><span class="arrow">→</span>
+                </button>
+                <div class="notes"><span class="message" data-message></span></div>
+                <div class="verdict">WRONG PASSWORD</div>
+            </form>
+
+            <div class="notice">
+                <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 5.2A9 9 0 0 1 20.6 10"/><path d="M3.6 9a9 9 0 0 0-.3 5.5"/><path d="M7 18.6A6 6 0 0 1 6 12a6 6 0 0 1 11.6-2.2"/><path d="M12 9a3 3 0 0 1 3 3c0 3.4-1 6.4-2.8 8.6"/><path d="M9.6 20A9 9 0 0 0 12 12"/><path d="M18 13.2c0 2.6-.6 5-1.7 7"/></svg><b>!</b></span>
+                <p data-notice-text></p>
+                <span class="tab">/ notice</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="flood" hidden>
+        <span class="big">→</span>
+        <span class="tab">/ welcome back,&nbsp;<span data-user-name></span></span>
+        <p data-flood-text></p>
+    </div>
+</div>
+<div class="demo-hint">password <b>lintel</b> · <b>Ctrl+Alt</b> + <b>↑↓</b> state · <b>←→</b> design · <b>W</b> wallpaper <span data-wallpaper-name></span> · <b>S</b> session · <b>U</b> user · <b>V</b> show password · <b>Z</b> sleep · <b>B</b> restart · <b>Q</b> power off · <a href="index.html">all</a></div>
+<script src="shared/icons.js"></script>
+<script src="shared/wallpapers.js"></script>
+<script src="shared/demo.js"></script>
+<script>
+const acid_button = document.querySelector(".login");
+const acid_flood = document.querySelector(".flood");
+const acid_notice = document.querySelector(".notice");
+
+function acid_rect(node) {
+    const outer = stage.getBoundingClientRect();
+    const inner = node.getBoundingClientRect();
+    const scale = outer.width / STAGE_WIDTH;
+    console.assert(scale > 0, scale);
+    return {
+        left: (inner.left - outer.left) / scale,
+        top: (inner.top - outer.top) / scale,
+        width: inner.width / scale,
+        height: inner.height / scale,
+    };
+}
+
+function acid_flood_place(rect) {
+    acid_flood.style.left = `${rect.left}px`;
+    acid_flood.style.top = `${rect.top}px`;
+    acid_flood.style.width = `${rect.width}px`;
+    acid_flood.style.height = `${rect.height}px`;
+}
+
+function acid_flood_open() {
+    acid_flood_place(acid_rect(acid_button));
+    acid_flood.hidden = false;
+    void acid_flood.offsetWidth;
+    acid_flood_place({ left: -4, top: -4, width: STAGE_WIDTH + 8, height: STAGE_HEIGHT + 8 });
+    acid_flood.classList.add("is-open");
+}
+
+function acid_flood_close() {
+    acid_flood.classList.remove("is-open");
+    acid_flood.hidden = true;
+}
+
+function acid_on_state() {
+    const success = stage.classList.contains("is-success");
+    const open = acid_flood.classList.contains("is-open");
+    if (success && !open) acid_flood_open();
+    if (!success && open) acid_flood_close();
+}
+
+function acid_on_message() {
+    text_set("[data-notice-text]", message.textContent);
+    acid_notice.classList.toggle("is-plain", !/fingerprint/i.test(message.textContent));
+    if (stage.classList.contains("is-success")) text_set("[data-flood-text]", message.textContent);
+}
+
+new MutationObserver(acid_on_state).observe(stage, { attributes: true, attributeFilter: ["class"] });
+new MutationObserver(acid_on_message).observe(message, { childList: true, characterData: true, subtree: true });
+acid_on_message();
+acid_on_state();
+</script>
+</body>
+</html>

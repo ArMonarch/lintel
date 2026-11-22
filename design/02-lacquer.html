@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · 02 Lacquer</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+/* 02 Lacquer: takes its colours from the painting itself. An ink panel melts
+   out of the dark wall on the left; vermilion for action, jade for the thin
+   rule echoing the green marks beside the vertical text. Light-weight clock,
+   underline fields, a red seal as the avatar. */
+
+.panel {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 900px;
+    padding: 0 0 0 168px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-image: linear-gradient(90deg,
+        rgba(13, 7, 6, 0.94) 0%,
+        rgba(13, 7, 6, 0.9) 45%,
+        rgba(13, 7, 6, 0.76) 60%,
+        rgba(13, 7, 6, 0.5) 72%,
+        rgba(13, 7, 6, 0.24) 84%,
+        rgba(13, 7, 6, 0.07) 94%,
+        rgba(13, 7, 6, 0) 100%);
+}
+
+.clock {
+    font-size: 128px;
+    font-weight: 200;
+    line-height: 1;
+    letter-spacing: -2px;
+    color: var(--parchment);
+}
+
+.date {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: rgba(242, 232, 216, 0.6);
+}
+
+.date::before {
+    content: "";
+    width: 28px;
+    height: 2px;
+    background: var(--jade);
+}
+
+form {
+    width: 400px;
+    height: 188px;
+    margin-top: 96px;
+    padding-left: 24px;
+    border-left: 2px solid rgba(200, 64, 44, 0.75);
+    transition: border-color 300ms;
+}
+
+.who {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: opacity 300ms;
+}
+
+/* A chop seal, after the red mark in the painting's top-left calligraphy. */
+.seal {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+    border: 2px solid rgba(255, 220, 200, 0.25);
+    background: var(--lacquer-deep);
+    font-family: var(--font-serif-cjk);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--parchment);
+    box-shadow: inset 0 0 0 3px var(--lacquer-deep), inset 0 0 0 4px rgba(255, 220, 200, 0.35);
+}
+
+.who-text { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.who-name { font-size: 22px; font-weight: 600; }
+.who-hint { font-size: 13px; color: rgba(242, 232, 216, 0.5); }
+
+.switch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
+    border: 1px solid rgba(242, 232, 216, 0.22);
+    color: rgba(242, 232, 216, 0.72);
+    transition: color 150ms, background 150ms, border-color 150ms;
+}
+
+.switch:hover { color: var(--parchment); border-color: rgba(242, 232, 216, 0.4); background: rgba(242, 232, 216, 0.08); }
+
+.entry {
+    margin-top: 34px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: opacity 300ms;
+}
+
+.field {
+    position: relative;
+    flex: 1;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(242, 232, 216, 0.3);
+    transition: border-color 150ms;
+}
+
+.field:focus-within { border-color: var(--gold); }
+
+.field::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 35%, var(--gold) 50%, transparent 65%) 0 0 / 300% 100% no-repeat;
+    opacity: 0;
+}
+
+.field input {
+    flex: 1;
+    min-width: 0;
+    font-size: 18px;
+    letter-spacing: 2px;
+}
+
+.reveal { display: inline-flex; color: rgba(242, 232, 216, 0.5); }
+.reveal:hover { color: var(--parchment); }
+
+.go {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+    background: var(--lacquer);
+    color: var(--parchment);
+    box-shadow: 0 6px 20px rgba(200, 64, 44, 0.35);
+    transition: background 150ms;
+}
+
+.go:hover { background: #dc4d37; }
+
+.go::after {
+    content: "";
+    display: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid rgba(242, 232, 216, 0.25);
+    border-top-color: var(--parchment);
+}
+
+.notes {
+    position: relative;
+    margin-top: 14px;
+    min-height: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 15px;
+    transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.notes::before {
+    content: "";
+    position: absolute;
+    left: -26px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--jade);
+    opacity: 0;
+    transition: opacity 300ms;
+}
+
+.message { color: rgba(242, 232, 216, 0.75); transition: color 200ms; }
+.is-error .message { color: var(--danger); }
+.is-info .message { color: var(--jade); }
+.capslock { color: var(--gold); }
+
+.is-error .entry { animation: shake 360ms ease-in-out; }
+.is-error .field { border-color: var(--danger); }
+.is-busy .go { background: var(--lacquer-deep); box-shadow: none; }
+.is-busy .go i[data-icon] { display: none; }
+.is-busy .go::after { display: block; animation: spin 800ms linear infinite; }
+.is-busy .field::after { opacity: 1; animation: sweep 1100ms ease-in-out infinite; }
+.is-success form { border-color: transparent; }
+.is-success .who,
+.is-success .entry { opacity: 0; }
+.is-success .notes { height: 52px; justify-content: center; transform: translateY(-148px); }
+.is-success .notes::before { opacity: 1; }
+.is-success .message { font-size: 22px; font-weight: 600; color: var(--parchment); }
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes sweep {
+    from { background-position: 100% 0; }
+    to { background-position: 0% 0; }
+}
+
+.footer {
+    position: absolute;
+    left: 168px;
+    bottom: 56px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.footer button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: rgba(242, 232, 216, 0.7);
+    transition: background 150ms, color 150ms;
+}
+
+.footer button:hover { color: var(--parchment); background: rgba(242, 232, 216, 0.08); }
+.footer .session { margin-right: 18px; padding-left: 0; }
+.footer .session b { color: var(--parchment); font-weight: 600; }
+.footer i[data-icon] { width: 26px; height: 26px; }
+.footer [data-power] { position: relative; }
+
+.footer [data-power] span {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 4px);
+    transform: translateX(-50%);
+    padding: 4px 9px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    color: var(--parchment);
+    background: rgba(13, 7, 6, 0.9);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms;
+}
+
+.footer [data-power]:hover span { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="stage" data-stage>
+    <div class="panel">
+        <div class="clock tabular" data-clock="time"></div>
+        <div class="date" data-clock="long"></div>
+
+        <form data-login>
+            <div class="who">
+                <div class="seal" data-user-initial></div>
+                <div class="who-text">
+                    <span class="who-name" data-user-name></span>
+                    <span class="who-hint">Enter your password</span>
+                </div>
+                <button type="button" class="switch" data-action="switch-user" title="Switch user">
+                    <i data-icon="system-switch-user"></i>
+                </button>
+            </div>
+            <div class="entry">
+                <label class="field">
+                    <input data-field="password" type="password" placeholder="Password">
+                    <button type="button" class="reveal" data-action="reveal" title="Show password">
+                        <i data-icon="view-visible"></i>
+                    </button>
+                </label>
+                <button class="go" type="submit" title="Log in"><i data-icon="go-next"></i></button>
+            </div>
+            <div class="notes">
+                <span class="message" data-message></span>
+                <span class="capslock" data-capslock>Caps Lock is on</span>
+            </div>
+        </form>
+    </div>
+
+    <div class="footer">
+        <button class="session" data-action="session">Session&nbsp;<b data-session-name></b></button>
+        <button data-power="suspend" title="Sleep"><i data-icon="system-suspend"></i><span>Sleep</span></button>
+        <button data-power="reboot" title="Restart"><i data-icon="system-reboot"></i><span>Restart</span></button>
+        <button data-power="shutdown" title="Shut Down"><i data-icon="system-shutdown"></i><span>Shut Down</span></button>
+    </div>
+</div>
+<div class="demo-hint">password <b>lintel</b> · <b>Ctrl+Alt</b> + <b>↑↓</b> state · <b>←→</b> design · <b>W</b> wallpaper <span data-wallpaper-name></span> · <b>S</b> session · <b>U</b> user · <b>V</b> show password · <b>Z</b> sleep · <b>B</b> restart · <b>Q</b> power off · <a href="index.html">all</a></div>
+<script src="shared/icons.js"></script>
+<script src="shared/wallpapers.js"></script>
+<script src="shared/demo.js"></script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · designs</title>
+<style>
+:root { color-scheme: dark; }
+
+body {
+    margin: 0;
+    padding: 32px 40px 48px;
+    background: #110b0a;
+    color: #f2e8d8;
+    font: 15px/1.5 "Adwaita Sans", "Inter", sans-serif;
+}
+
+h1 { margin: 0; font-size: 22px; font-weight: 600; }
+p { margin: 4px 0 28px; color: rgba(242, 232, 216, 0.6); }
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(560px, 1fr));
+    gap: 28px;
+}
+
+figure { margin: 0; }
+
+h2 { margin: 48px 0 0; font-size: 18px; font-weight: 600; }
+.sources { margin: 12px 0 0; padding-left: 20px; color: rgba(242, 232, 216, 0.6); }
+.sources a { color: #f2e8d8; }
+
+/* Each frame scales its own 1920x1080 stage to fit, via demo.js. */
+iframe {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 1px solid rgba(242, 232, 216, 0.12);
+    border-radius: 8px;
+    background: #000;
+    pointer-events: none;
+}
+
+.wallpapers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: -12px 0 28px;
+}
+
+.wallpapers button {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: rgba(242, 232, 216, 0.6);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.wallpapers img {
+    display: block;
+    width: 160px;
+    aspect-ratio: 16 / 9;
+    border: 2px solid transparent;
+    border-radius: 6px;
+}
+
+.wallpapers button:hover { color: #f2e8d8; }
+.wallpapers .is-current { color: #f2e8d8; }
+.wallpapers .is-current img { border-color: #e6b35c; }
+
+figcaption { margin-top: 10px; }
+figcaption a { color: #f2e8d8; font-weight: 600; text-decoration: none; }
+figcaption a:hover { text-decoration: underline; }
+figcaption span { display: block; color: rgba(242, 232, 216, 0.6); font-size: 14px; }
+
+.archive { margin-top: 48px; }
+.archive a { color: #f2e8d8; }
+</style>
+</head>
+<body>
+<h1>lintel — greeter designs</h1>
+<p>Open one to try it: password <b>lintel</b>. Every shortcut is Ctrl+Alt plus a key: ↑↓ state, ←→ design, W wallpaper, S session, U user, V show password, I paper/ink, Z sleep, B restart, Q power off.</p>
+
+<div class="wallpapers" data-wallpapers></div>
+<div class="grid">
+    <figure>
+        <iframe src="01-revival.html" tabindex="-1" loading="lazy"></iframe>
+        <figcaption><a href="01-revival.html">01 Revival</a>
+            <span>Your old SDDM layout, cleaned up: left column, big lilac clock, pill fields, Plasma power buttons.</span></figcaption>
+    </figure>
+    <figure>
+        <iframe src="52-revival-breeze.html" tabindex="-1" loading="lazy"></iframe>
+        <figcaption><a href="52-revival-breeze.html">52 Revival Breeze</a>
+            <span>01 Revival with KDE Breeze input fields: 300×40 boxes, 4px corners, a thin border that turns Breeze blue on focus.</span></figcaption>
+    </figure>
+    <figure>
+        <iframe src="51-unlock.html" tabindex="-1" loading="lazy"></iframe>
+        <figcaption><a href="51-unlock.html">51 Unlock</a>
+            <span>A Windows-style lock screen (big clock over the sharp wallpaper); any key or click lifts it into a KDE Breeze login with the Breeze icons.</span></figcaption>
+    </figure>
+    <figure>
+        <iframe src="54-unlock-glide.html" tabindex="-1" loading="lazy"></iframe>
+        <figcaption><a href="54-unlock-glide.html">54 Unlock Glide</a>
+            <span>51 Unlock where the time and date never fade: they shrink and glide from the lock size to the login size while everything else fades and the wallpaper blurs.</span></figcaption>
+    </figure>
+</div>
+
+<p class="archive">The other 50 designs are set aside in the <a href="archive.html">archive</a>.</p>
+
+<h2>Sources looked at</h2>
+<ul class="sources">
+    <li><a href="https://github.com/uiriansan/SilentSDDM">SilentSDDM</a> — presets, animated backgrounds, 200+ options</li>
+    <li><a href="https://github.com/Keyitdev/sddm-astronaut-theme">sddm-astronaut-theme</a> — side panel with partial blur, ten presets</li>
+    <li><a href="https://github.com/Darkkal44/qylock">qylock</a> — SDDM and Quickshell lockscreen collection</li>
+    <li><a href="https://github.com/mahaveergurjar/Hyprlock-Dots">Hyprlock-Dots</a> — twenty hyprlock layouts with widgets</li>
+    <li><a href="https://github.com/NoiSek/Aether">Aether</a>, <a href="https://github.com/Litarvan/lightdm-webkit-theme-litarvan">Litarvan</a> — LightDM webkit themes, user carousels</li>
+    <li><a href="https://quickshell.org/docs/types/Quickshell.Services.Greetd/Greetd">Quickshell Greetd service</a> — what Quickshell greeters build on</li>
+</ul>
+<script src="shared/wallpapers.js?v=20261123c"></script>
+<script>
+const picker = document.querySelector("[data-wallpapers]");
+console.assert(picker !== null);
+
+function picker_mark() {
+    const current = wallpaper_load();
+    for (const button of picker.children) {
+        button.classList.toggle("is-current", button.dataset.wallpaper === current);
+    }
+}
+
+function picker_build() {
+    for (const name of WALLPAPERS) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.wallpaper = name;
+        const image = document.createElement("img");
+        image.src = wallpaper_url(name, "");
+        image.alt = "";
+        image.loading = "lazy";
+        button.append(image, name);
+        picker.append(button);
+    }
+}
+
+function on_pick(event) {
+    const button = event.target.closest("[data-wallpaper]");
+    if (button === null) return;
+    wallpaper_store(button.dataset.wallpaper);
+    picker_mark();
+}
+
+function on_storage(event) {
+    if (event.key !== WALLPAPER_STORAGE_KEY) return;
+    picker_mark();
+}
+
+picker.addEventListener("click", on_pick);
+addEventListener("storage", on_storage);
+picker_build();
+picker_mark();
+</script>
+<script>
+for (const node of document.querySelectorAll('a[href$=".html"], iframe[src$=".html"]')) {
+    const attribute = node.tagName === "A" ? "href" : "src";
+    node.setAttribute(attribute, `${node.getAttribute(attribute)}?t=${Date.now()}`);
+}
+</script>
+</body>
+</html>
