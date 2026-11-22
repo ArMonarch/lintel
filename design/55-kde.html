@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lintel · 55 KDE Breeze</title>
+<link rel="stylesheet" href="shared/base.css?v=20261123g">
+<style>
+@font-face {
+    font-family: "Noto Sans";
+    src: url("assets/fonts/NotoSans-Variable.ttf") format("truetype");
+    font-weight: 100 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Noto Sans";
+    src: url("assets/fonts/NotoSans-Italic-Variable.ttf") format("truetype");
+    font-weight: 100 900;
+    font-style: italic;
+}
+
+.stage {
+    --text: #fcfcfc;
+    --base: #2a2e32;
+    --frame: rgba(252, 252, 252, 0.2);
+    --focus: #3daee9;
+    --in-out-quad: cubic-bezier(0.45, 0, 0.55, 1);
+    background: #000;
+    color: var(--text);
+    font-family: "Noto Sans", sans-serif;
+    font-size: 13.33px;
+}
+
+.wallpaper {
+    position: absolute;
+    inset: -120px;
+    background: var(--wallpaper, url("assets/wallpapers/qi.jpg")) center / cover no-repeat;
+    filter: blur(50px) contrast(0.8) saturate(1.5) brightness(0.7);
+    transition: filter 800ms var(--in-out-quad);
+}
+
+.is-ui-hidden .wallpaper { filter: blur(0) contrast(1) saturate(1) brightness(1); }
+
+.clock {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 378px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 0 0.8px 7px rgba(0, 0, 0, 0);
+    transition: text-shadow 800ms var(--in-out-quad);
+}
+
+.is-ui-hidden .clock { text-shadow: 0 0.8px 7px rgba(0, 0, 0, 0.7); }
+
+.clock-time {
+    font-size: 96px;
+    font-weight: 600;
+    letter-spacing: -3px;
+    word-spacing: 3px;
+    line-height: 1.2;
+}
+
+.clock-date {
+    font-size: 32px;
+    line-height: 1.3;
+}
+
+.main {
+    position: absolute;
+    inset: 0;
+    transition: opacity 400ms var(--in-out-quad);
+}
+
+.is-ui-hidden .main,
+.is-ui-hidden .footer {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.user {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 540px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 200ms;
+}
+
+.avatar {
+    width: 126px;
+    height: 126px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 2px solid var(--text);
+    background: rgba(42, 46, 50, 0.6);
+}
+
+.avatar i[data-icon] { width: 64px; height: 64px; }
+
+.name {
+    margin-top: 18px;
+    font-size: 18.67px;
+}
+
+.prompts {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 548px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.notes {
+    min-height: 18px;
+    max-width: 288px;
+    text-align: center;
+    font-style: italic;
+    line-height: 18px;
+}
+
+.message:not(:empty) ~ .capslock::before { content: "\2022\00a0"; }
+.is-busy .message { display: none; }
+
+.entry {
+    width: 288px;
+    display: flex;
+    gap: 5px;
+}
+
+.field {
+    flex: 1;
+    min-width: 0;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    border-radius: 5px;
+    border: 1px solid var(--frame);
+    background: var(--base);
+    transition: border-color 100ms, box-shadow 100ms, opacity 200ms;
+}
+
+.field:hover { border-color: var(--focus); }
+
+.field:focus-within {
+    border-color: var(--focus);
+    box-shadow: 0 0 0 2px rgba(61, 174, 233, 0.33);
+}
+
+.field input { width: 100%; font-size: 14.67px; }
+
+.go {
+    width: 32px;
+    height: 32px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border-radius: 5px;
+    border: 1px solid var(--frame);
+    background: var(--base);
+    color: var(--text);
+    transition: border-color 100ms, background 100ms, opacity 200ms;
+}
+
+.go:hover { border-color: var(--focus); }
+.go:active { border-color: var(--focus); background: rgba(61, 174, 233, 0.33); }
+.go i[data-icon] { width: 16px; height: 16px; }
+
+.actions {
+    margin-top: 11px;
+    display: flex;
+    gap: 8px;
+}
+
+.actions button {
+    min-width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+    font-size: 14.67px;
+    color: var(--text);
+    opacity: 0.85;
+    transition: opacity 200ms var(--in-out-quad);
+}
+
+.actions button:hover,
+.actions button:focus-visible { opacity: 1; }
+
+.ring {
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    transition: background 100ms;
+}
+
+.actions button:hover .ring,
+.actions button:focus-visible .ring { background: rgba(252, 252, 252, 0.15); }
+.actions button:active .ring { background: rgba(252, 252, 252, 0.3); }
+.actions i[data-icon] { width: 48px; height: 48px; }
+
+.is-busy .user { opacity: 0.75; }
+.is-busy .field,
+.is-busy .go,
+.is-busy .actions { opacity: 0.6; }
+.is-busy .main,
+.is-busy .footer { pointer-events: none; }
+
+.is-error .main { animation: kde-reject 600ms linear; }
+
+@keyframes kde-reject {
+    0% { transform: translateX(0); }
+    2.86% { transform: translateX(-15px); }
+    9.14% { transform: translateX(15px); }
+    16.45% { transform: translateX(-15px); }
+    25.31% { transform: translateX(15px); }
+    37% { transform: translateX(-15px); }
+    56.32% { transform: translateX(15px); }
+    100% { transform: translateX(0); }
+}
+
+.is-success .main,
+.is-success .footer { opacity: 0; }
+
+.footer {
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    bottom: 4px;
+    display: flex;
+    gap: 4px;
+    transition: opacity 400ms var(--in-out-quad);
+}
+
+.tool {
+    padding: 6px 8px;
+    border-radius: 5px;
+    color: var(--text);
+    transition: background 100ms;
+}
+
+.tool:hover { background: rgba(252, 252, 252, 0.1); }
+</style>
+</head>
+<body>
+<div class="stage is-ui-hidden" data-stage data-login-failed="Login Failed">
+    <div class="wallpaper"></div>
+
+    <div class="clock">
+        <div class="clock-time tabular" data-clock="time"></div>
+        <div class="clock-date" data-clock="long"></div>
+    </div>
+
+    <form class="main" data-login>
+        <div class="user">
+            <div class="avatar"><i data-icon="user-identity"></i></div>
+            <div class="name" data-user-name></div>
+        </div>
+
+        <div class="prompts">
+            <div class="notes">
+                <span class="message" data-message></span>
+                <span class="capslock" data-capslock>Caps Lock is on</span>
+            </div>
+            <div class="entry">
+                <label class="field">
+                    <input data-field="password" data-masked type="text" placeholder="Password" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off">
+                </label>
+                <button class="go" type="submit" title="Log In"><i data-icon="go-next"></i></button>
+            </div>
+            <div class="actions">
+                <button type="button" data-power="suspend"><span class="ring"><i data-icon="system-suspend"></i></span>Sleep</button>
+                <button type="button" data-power="reboot"><span class="ring"><i data-icon="system-reboot"></i></span>Restart</button>
+                <button type="button" data-power="shutdown"><span class="ring"><i data-icon="system-shutdown"></i></span>Shut Down</button>
+                <button type="button" data-action="switch-user"><span class="ring"><i data-icon="system-user-prompt"></i></span>Other…</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="footer">
+        <button class="tool" data-action="session">Desktop Session: <span data-session-name></span></button>
+    </div>
+</div>
+<div class="demo-hint">password <b>lintel</b> · any key, click or mouse move shows the login · <b>Esc</b> or 60 s idle hides it · <b>Ctrl+Alt</b> + <b>↑↓</b> state · <b>←→</b> design · <b>W</b> wallpaper <span data-wallpaper-name></span> · <b>S</b> session · <b>U</b> user · <b>Z</b> sleep · <b>B</b> restart · <b>Q</b> power off · <a href="index.html">all</a></div>
+<script src="shared/icons.js?v=20261123g"></script>
+<script src="shared/wallpapers.js?v=20261123g"></script>
+<script src="shared/demo.js?v=20261123g"></script>
+<script>
+const UI_IDLE_MS = 60000;
+const NOTIFICATION_RESET_MS = 3000;
+console.assert(message !== null);
+
+let ui_timer = 0;
+let notification_timer = 0;
+let pointer_x = -1;
+let pointer_y = -1;
+
+function ui_is_hidden() {
+    return stage.classList.contains("is-ui-hidden");
+}
+
+function ui_blocked() {
+    if (field_password.value.length > 0) return true;
+    return stage.classList.contains("is-busy") || stage.classList.contains("is-success");
+}
+
+function ui_arm() {
+    clearTimeout(ui_timer);
+    ui_timer = setTimeout(ui_hide, UI_IDLE_MS);
+}
+
+function ui_hide() {
+    if (ui_blocked()) {
+        ui_arm();
+        return;
+    }
+    clearTimeout(ui_timer);
+    stage.classList.add("is-ui-hidden");
+}
+
+function ui_show() {
+    stage.classList.remove("is-ui-hidden");
+    ui_arm();
+}
+
+function on_ui_key(event) {
+    if (["Shift", "Control", "Alt", "Meta", "CapsLock", "AltGraph"].includes(event.key)) return;
+    if (event.key === "Escape" && !ui_is_hidden() && !ui_blocked()) {
+        event.preventDefault();
+        ui_hide();
+        return;
+    }
+    ui_show();
+    if (document.activeElement !== field_password) field_password.focus();
+}
+
+function on_pointer_move(event) {
+    if (event.clientX === pointer_x && event.clientY === pointer_y) return;
+    const first = pointer_x === -1;
+    pointer_x = event.clientX;
+    pointer_y = event.clientY;
+    if (!first) ui_show();
+}
+
+function on_message() {
+    clearTimeout(notification_timer);
+    if (message.textContent.length === 0) return;
+    notification_timer = setTimeout(() => {
+        if (!stage.classList.contains("is-busy")) message.textContent = "";
+    }, NOTIFICATION_RESET_MS);
+}
+
+document.addEventListener("keydown", on_ui_key, true);
+document.addEventListener("pointermove", on_pointer_move, true);
+document.addEventListener("pointerdown", ui_show, true);
+new MutationObserver(on_message).observe(message, { childList: true, characterData: true, subtree: true });
+</script>
+</body>
+</html>

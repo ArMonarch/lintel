@@ -2,12 +2,10 @@
 // greetd conversation. Password "lintel" succeeds, anything else fails.
 
 const DESIGNS = [
-    "01-revival.html",
-    "52-revival-breeze.html",
-    "51-unlock.html",
     "54-unlock-glide.html",
 ];
 const ARCHIVE = [
+    "01-revival.html",
     "02-lacquer.html",
     "03-floor.html",
     "04-plasma.html",
@@ -57,12 +55,16 @@ const ARCHIVE = [
     "48-letter.html",
     "49-scope.html",
     "50-topo.html",
+    "51-unlock.html",
+    "52-revival-breeze.html",
     "53-unlock-steady.html",
+    "55-kde.html",
 ];
 const SESSIONS = ["niri", "Plasma (Wayland)", "Shell"];
 const USERS = ["frenzfries", "guest"];
 const PASSWORD_DEMO = "lintel";
 const AUTH_DELAY_MS = 900;
+const LOGIN_FAILED_TEXT = "Login failed. Check your password and try again.";
 const SUCCESS_RESET_MS = 2600;
 const STATES = ["idle", "busy", "error", "info", "success"];
 const STAGE_WIDTH = 1920;
@@ -222,7 +224,7 @@ function login_finish() {
             field_password.focus();
         }, SUCCESS_RESET_MS);
     } else {
-        state_fail("Login failed. Check your password and try again.");
+        state_fail(stage.dataset.loginFailed ?? LOGIN_FAILED_TEXT);
         field_password.focus();
     }
 }
@@ -290,7 +292,7 @@ function demo_state_step(offset) {
     const demo = [
         ["idle", ""],
         ["busy", "Authenticating…"],
-        ["error", "Login failed. Check your password and try again."],
+        ["error", stage.dataset.loginFailed ?? LOGIN_FAILED_TEXT],
         ["info", "Touch the fingerprint reader"],
         ["success", `Starting ${SESSIONS[session_index]}…`],
     ];

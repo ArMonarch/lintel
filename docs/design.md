@@ -14,8 +14,8 @@ python3 nix/serve.py
 Open http://localhost:8473/. `nix/serve.py` serves `design/` with `Cache-Control: no-store`, so
 the browser never keeps an old stylesheet or script after a mockup changes (plain
 `python3 -m http.server` sends no cache headers and browsers then cache files for days). `index.html` shows the designs being refined, side by side:
-01 Revival, 52 Revival Breeze, 51 Unlock and 54 Unlock Glide. All open on a lock
-screen (clock and date over the bare
+54 Unlock Glide, the primary design. 51 Unlock and 55 KDE Breeze (the plain KDE
+reference) are archived with the rest. 54 opens on a lock screen (clock and date over the bare
 wallpaper); any key, click or scroll lifts it into the login, and Esc on an empty field or
 30 s idle drops it again. `shared/curtain.js` does this for any page with a `[data-lock]`
 view and `is-locked` on the stage. The rest are set aside in `archive.html` as plain links;
@@ -101,10 +101,11 @@ On a design page:
 | 48 | Letter | A typewritten letter on a dark wood desk: Courier Prime letterhead and body, x's struck for each password character, a red margin rule, P.S. lines for power, red-pen 'wrong password' with XXXX overtype on error, and a signed letter that folds into an addressed envelope on success. |
 | 49 | Scope | A phosphor oscilloscope: green graticule with the password as a glowing pulse train and ASCII bus cells, the clock drawn by the beam as vector numerals, CH1/CH2 channel readouts for user and session, and soft-key power labels on the bezel. |
 | 50 | Topo | A topographic sheet on cream paper: the user is a map pin whose label card holds the password, sessions are coloured routes to a summit, lake shore and hut, and the clock is written as coordinates in a legend with scale bar, north arrow and map-symbol power keys. |
-| 51 | Unlock | Windows-style lock screen first; any key, click or scroll lifts it into a KDE Breeze login. Esc on an empty field or 30 s idle drops it again. |
+| 51 | Unlock | Windows-style lock screen first; any key, click or scroll lifts it into a KDE Breeze login. Esc on an empty field or 30 s idle drops it again. Its login part uses KDE Breeze sizes and styling from KDE's source: a 126px avatar, an 18.67px name, the italic notification line above the field, a 251×32 field with 5px corners and a #3daee9 focus ring, a 32px square button, 48px action icons and the footer 4px from the screen edge. |
 | 52 | Revival Breeze | 01 Revival with KDE Breeze input fields: 300×40 boxes with 4px corners and a thin border that turns Breeze blue on focus, text left-aligned, the switch-user icon at the field's right end, and a matching square-cornered Login button. |
 | 53 | Unlock Steady | 51 Unlock with one clock: the lock screen's 148px time and 30px date stay in place on both screens while the hint fades and the Breeze login rises in beneath them over the blurring wallpaper. Archived in favour of 54. |
-| 54 | Unlock Glide | 51 Unlock where the time and date never fade: they shrink and glide from the lock size to 51's login size while everything else fades and the wallpaper blurs. |
+| 54 | Unlock Glide | 51 Unlock where the time and date never fade: the whole clock scales to 72% and glides up, keeping its proportions, while everything else fades and the wallpaper blurs. The lock hint is bold, 20px. The login part uses KDE's own sizes and styling, as in 51. |
+| 55 | KDE Breeze | A plain build of Plasma 6's SDDM Breeze login from KDE's source: 96px DemiBold time and 32px date midway above the user, a 126px avatar whose block ends at the screen's centre, an italic notification line ("Login Failed", joined to "Caps Lock is on" with a bullet, cleared after 3 s) above a 288px field-and-button row, 48px action icons, a ±15px reject shake over 600 ms, no spinner, the wallpaper blurred 50px with contrast 0.8, saturation 1.5 and brightness 0.7, and the UI fading after 60 s idle to the bare wallpaper and a shadowed clock. It opens in that faded state: any key, click or mouse move fades the login in over 400 ms while the blur ramps up over 800 ms and the clock stays still. |
 
 ## Files
 
@@ -173,9 +174,10 @@ matters:
 
 - **Icons:** KDE Breeze (dark) from `kdePackages.breeze-icons`: `system-shutdown`,
   `system-reboot`, `system-suspend` (32 px) and `system-switch-user`, `view-visible`,
-  `view-hidden`, `go-next`, `user-identity` (22 px). They are monochrome paths, so they
+  `view-hidden`, `go-next`, `user-identity` (22 px), `system-user-prompt` (32 px, 55). They are monochrome paths, so they
   convert cleanly to MSDF.
-- **Fonts:** Adwaita Sans (Inter-based) for text, Iosevka for design 07, Noto Serif CJK
+- **Fonts:** Noto Sans (55, Plasma's default UI font, variable upright and italic from
+  `noto-fonts-lgc-plus`). Adwaita Sans (Inter-based) for text, Iosevka for design 07, Noto Serif CJK
   JP for kanji. Vendored in `assets/fonts/`, all from nixpkgs and OFL unless noted:
   EB Garamond (11), Lexend Exa (13, 18), Departure Mono (14), Orbitron (16),
   Barlow Condensed (17, 20), Jost (19), Geist (21), Quicksand (22), Archivo Black and
