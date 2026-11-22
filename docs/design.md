@@ -14,8 +14,12 @@ python3 nix/serve.py
 Open http://localhost:8473/. `nix/serve.py` serves `design/` with `Cache-Control: no-store`, so
 the browser never keeps an old stylesheet or script after a mockup changes (plain
 `python3 -m http.server` sends no cache headers and browsers then cache files for days). `index.html` shows the designs being refined, side by side:
-54 Unlock Glide, the primary design. 51 Unlock and 55 KDE Breeze (the plain KDE
-reference) are archived with the rest. 54 opens on a lock screen (clock and date over the bare
+54 Unlock Glide, the primary design, with 55 KDE Breeze (the plain KDE reference) linked
+below it. Only these two are in the repository: the archive (every other `NN-*.html`,
+`archive.html` and the fonts only they use) stays on the author's machine, untracked and
+listed in `.git/info/exclude`, so the design table below describes pages a fresh clone does
+not have. The index shows the archive link only when `archive.html` is there. 54 opens on a
+lock screen (clock and date over the bare
 wallpaper); any key, click or scroll lifts it into the login, and Esc on an empty field or
 30 s idle drops it again. `shared/curtain.js` does this for any page with a `[data-lock]`
 view and `is-locked` on the stage. The rest are set aside in `archive.html` as plain links;

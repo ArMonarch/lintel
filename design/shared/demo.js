@@ -3,6 +3,7 @@
 
 const DESIGNS = [
     "54-unlock-glide.html",
+    "55-kde.html",
 ];
 const ARCHIVE = [
     "01-revival.html",
@@ -58,7 +59,6 @@ const ARCHIVE = [
     "51-unlock.html",
     "52-revival-breeze.html",
     "53-unlock-steady.html",
-    "55-kde.html",
 ];
 const SESSIONS = ["niri", "Plasma (Wayland)", "Shell"];
 const USERS = ["frenzfries", "guest"];

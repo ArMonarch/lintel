@@ -95,7 +95,8 @@ figcaption span { display: block; color: rgba(242, 232, 216, 0.6); font-size: 14
     </figure>
 </div>
 
-<p class="archive">The other 54 designs are set aside in the <a href="archive.html">archive</a>.</p>
+<p class="archive"><a href="55-kde.html">55 KDE Breeze</a> is the plain Plasma 6 login, built from KDE's source, that 54 is measured against.</p>
+<p class="archive" data-archive hidden>The other designs are set aside in the <a href="archive.html">archive</a>, which stays on this machine and is not in the repository.</p>
 
 <h2>Sources looked at</h2>
 <ul class="sources">
@@ -106,7 +107,7 @@ figcaption span { display: block; color: rgba(242, 232, 216, 0.6); font-size: 14
     <li><a href="https://github.com/NoiSek/Aether">Aether</a>, <a href="https://github.com/Litarvan/lightdm-webkit-theme-litarvan">Litarvan</a> — LightDM webkit themes, user carousels</li>
     <li><a href="https://quickshell.org/docs/types/Quickshell.Services.Greetd/Greetd">Quickshell Greetd service</a> — what Quickshell greeters build on</li>
 </ul>
-<script src="shared/wallpapers.js?v=20261123g"></script>
+<script src="shared/wallpapers.js?v=20261123h"></script>
 <script>
 const picker = document.querySelector("[data-wallpapers]");
 console.assert(picker !== null);
@@ -150,6 +151,9 @@ picker_build();
 picker_mark();
 </script>
 <script>
+fetch("archive.html", { method: "HEAD" }).then((response) => {
+    if (response.ok) document.querySelector("[data-archive]").hidden = false;
+}).catch(() => {});
 for (const node of document.querySelectorAll('a[href$=".html"], iframe[src$=".html"]')) {
     const attribute = node.tagName === "A" ? "href" : "src";
     node.setAttribute(attribute, `${node.getAttribute(attribute)}?t=${Date.now()}`);
