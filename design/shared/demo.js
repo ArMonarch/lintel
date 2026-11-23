@@ -3,62 +3,6 @@
 
 const DESIGNS = [
     "54-unlock-glide.html",
-    "55-kde.html",
-];
-const ARCHIVE = [
-    "01-revival.html",
-    "02-lacquer.html",
-    "03-floor.html",
-    "04-plasma.html",
-    "05-ring.html",
-    "06-stacked.html",
-    "07-terminal.html",
-    "08-scroll.html",
-    "09-glass.html",
-    "10-dashboard.html",
-    "11-paper.html",
-    "12-flap.html",
-    "13-nameboard.html",
-    "14-onebit.html",
-    "15-console.html",
-    "16-readout.html",
-    "17-signage.html",
-    "18-decay.html",
-    "19-bauhaus.html",
-    "20-sleeve.html",
-    "21-slide.html",
-    "22-mascot.html",
-    "23-ripple.html",
-    "24-fingerprint.html",
-    "25-circuit.html",
-    "26-pinpad.html",
-    "27-acid.html",
-    "28-spotlight.html",
-    "29-dial.html",
-    "30-dotmatrix.html",
-    "31-quiet.html",
-    "32-corners.html",
-    "33-zero.html",
-    "34-slice.html",
-    "35-crt.html",
-    "36-arcade.html",
-    "37-shader.html",
-    "38-profiles.html",
-    "39-eink.html",
-    "40-bevel.html",
-    "41-handheld.html",
-    "42-material.html",
-    "43-hud.html",
-    "44-blueprint.html",
-    "45-boarding.html",
-    "46-neon.html",
-    "47-polaroid.html",
-    "48-letter.html",
-    "49-scope.html",
-    "50-topo.html",
-    "51-unlock.html",
-    "52-revival-breeze.html",
-    "53-unlock-steady.html",
 ];
 const SESSIONS = ["niri", "Plasma (Wayland)", "Shell"];
 const USERS = ["frenzfries", "guest"];
@@ -351,10 +295,9 @@ function page_links_fresh() {
 
 function design_go(offset) {
     const name = location.pathname.split("/").pop();
-    const list = DESIGNS.includes(name) ? DESIGNS : ARCHIVE;
-    const index = list.indexOf(name);
-    console.assert(index !== -1, `${name} missing from DESIGNS and ARCHIVE`);
-    location.href = page_url(list[(index + offset + list.length) % list.length]);
+    const index = DESIGNS.indexOf(name);
+    console.assert(index !== -1, `${name} missing from DESIGNS`);
+    location.href = page_url(DESIGNS[(index + offset + DESIGNS.length) % DESIGNS.length]);
 }
 
 function on_click(event) {

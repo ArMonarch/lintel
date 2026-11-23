@@ -78,25 +78,21 @@ figcaption a { color: #f2e8d8; font-weight: 600; text-decoration: none; }
 figcaption a:hover { text-decoration: underline; }
 figcaption span { display: block; color: rgba(242, 232, 216, 0.6); font-size: 14px; }
 
-.archive { margin-top: 48px; }
-.archive a { color: #f2e8d8; }
 </style>
 </head>
 <body>
-<h1>lintel — greeter designs</h1>
-<p>Open one to try it: password <b>lintel</b>. Every shortcut is Ctrl+Alt plus a key: ↑↓ state, ←→ design, W wallpaper, S session, U user, V show password, I paper/ink, Z sleep, B restart, Q power off.</p>
+<h1>lintel — greeter design</h1>
+<p>Open it to try it: password <b>lintel</b>. Every shortcut is Ctrl+Alt plus a key: ↑↓ state, W wallpaper, S session, V show password, Z sleep, B restart, Q power off. Esc locks.</p>
 
 <div class="wallpapers" data-wallpapers></div>
 <div class="grid">
     <figure>
         <iframe src="54-unlock-glide.html" tabindex="-1" loading="lazy"></iframe>
         <figcaption><a href="54-unlock-glide.html">54 Unlock Glide</a>
-            <span>51 Unlock where the time and date never fade: they shrink and glide from the lock size to the login size while everything else fades and the wallpaper blurs.</span></figcaption>
+            <span>A lock screen of clock and date over the bare wallpaper; any key or click glides the clock up to 72% while the wallpaper takes KDE's blur and the Breeze login fades in.</span></figcaption>
     </figure>
 </div>
 
-<p class="archive"><a href="55-kde.html">55 KDE Breeze</a> is the plain Plasma 6 login, built from KDE's source, that 54 is measured against.</p>
-<p class="archive" data-archive hidden>The other designs are set aside in the <a href="archive.html">archive</a>, which stays on this machine and is not in the repository.</p>
 
 <h2>Sources looked at</h2>
 <ul class="sources">
@@ -107,7 +103,7 @@ figcaption span { display: block; color: rgba(242, 232, 216, 0.6); font-size: 14
     <li><a href="https://github.com/NoiSek/Aether">Aether</a>, <a href="https://github.com/Litarvan/lightdm-webkit-theme-litarvan">Litarvan</a> — LightDM webkit themes, user carousels</li>
     <li><a href="https://quickshell.org/docs/types/Quickshell.Services.Greetd/Greetd">Quickshell Greetd service</a> — what Quickshell greeters build on</li>
 </ul>
-<script src="shared/wallpapers.js?v=20261123h"></script>
+<script src="shared/wallpapers.js?v=20261123i"></script>
 <script>
 const picker = document.querySelector("[data-wallpapers]");
 console.assert(picker !== null);
@@ -151,9 +147,6 @@ picker_build();
 picker_mark();
 </script>
 <script>
-fetch("archive.html", { method: "HEAD" }).then((response) => {
-    if (response.ok) document.querySelector("[data-archive]").hidden = false;
-}).catch(() => {});
 for (const node of document.querySelectorAll('a[href$=".html"], iframe[src$=".html"]')) {
     const attribute = node.tagName === "A" ? "href" : "src";
     node.setAttribute(attribute, `${node.getAttribute(attribute)}?t=${Date.now()}`);
